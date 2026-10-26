@@ -1,0 +1,22 @@
+* @kyrylobatrak @mkrtmkm
+
+/src/main/java/transport/model/ @kyrylobatrak
+/src/main/java/transport/exception/ @kyrylobatrak
+/src/main/java/transport/repository/ @kyrylobatrak
+/src/main/java/transport/service/ @kyrylobatrak
+/src/main/java/transport/cli/ @kyrylobatrak
+/src/main/java/transport/config/ @kyrylobatrak
+/src/main/java/transport/reporting/Sales* @kyrylobatrak
+/src/main/java/transport/reporting/Luggage* @kyrylobatrak
+/src/main/java/transport/util/JsonStorage.java @kyrylobatrak
+/data/ @kyrylobatrak
+
+/src/main/java/transport/optimization/ @mkrtmkm
+/src/test/java/transport/optimization/ @mkrtmkm
+/src/main/java/transport/util/CityGraph.java @mkrtmkm
+/src/main/java/transport/util/DistanceCalculator.java @mkrtmkm
+/src/main/java/transport/service/ScheduleService.java @mkrtmkm
+/src/main/java/transport/reporting/Bus* @mkrtmkm
+/src/main/java/transport/reporting/Route* @mkrtmkm
+/scripts/ @mkrtmkm
+/.github/ @mkrtmkm
