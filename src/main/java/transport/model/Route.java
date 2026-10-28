@@ -14,12 +14,14 @@ import java.util.Set;
  * <p>Зупинки нумеруються з 0. Ділянка {@code i} з'єднує зупинки {@code i} та {@code i + 1}. Квиток
  * {@code from → to} займає ділянки {@code [index(from); index(to))}.
  *
+ * <p>Стоянка задається окремо для кожної проміжної зупинки ({@link RouteSegment#dwellAtEnd()}). На
+ * кінцевій стоянки немає.
+ *
  * @param number номер маршруту (> 0)
  * @param name назва
  * @param segments ділянки в порядку руху, кожна наступна починається там, де закінчилась попередня
- * @param dwellTime тривалість стоянки на кожній проміжній зупинці
  */
-public record Route(int number, String name, List<RouteSegment> segments, Duration dwellTime) {
+public record Route(int number, String name, List<RouteSegment> segments) {
 
   public Route {
     Checks.requirePositive(number, "number");
@@ -29,7 +31,9 @@ public record Route(int number, String name, List<RouteSegment> segments, Durati
       throw new IllegalArgumentException("route " + number + " must have at least one segment");
     }
     segments = List.copyOf(segments);
-    Checks.requireNonNegative(dwellTime, "dwellTime");
+    if (!segments.get(segments.size() - 1).dwellAtEnd().isZero()) {
+      throw new IllegalArgumentException("route " + number + ": no dwell at the final stop");
+    }
 
     Set<String> seen = new HashSet<>();
     seen.add(segments.get(0).from().id());
@@ -45,9 +49,18 @@ public record Route(int number, String name, List<RouteSegment> segments, Durati
     }
   }
 
-  /** Маршрут без стоянок на проміжних зупинках. */
-  public Route(int number, String name, List<RouteSegment> segments) {
-    this(number, name, segments, Duration.ZERO);
+  /**
+   * Маршрут з однаковою стоянкою на всіх проміжних зупинках (зручно для seed-даних і тестів).
+   * Наявні {@code dwellAtEnd} у ділянках перезаписуються.
+   */
+  public static Route withUniformDwell(
+      int number, String name, List<RouteSegment> segments, Duration dwell) {
+    List<RouteSegment> result = new ArrayList<>(segments.size());
+    for (int i = 0; i < segments.size(); i++) {
+      boolean last = i == segments.size() - 1;
+      result.add(segments.get(i).withDwellAtEnd(last ? Duration.ZERO : dwell));
+    }
+    return new Route(number, name, result);
   }
 
   /** Усі зупинки по порядку. */
@@ -125,16 +138,22 @@ public record Route(int number, String name, List<RouteSegment> segments, Durati
     Duration offset = Duration.ZERO;
     for (int i = 0; i < stopIndex; i++) {
       offset = offset.plus(segments.get(i).travelTime());
+      if (i < stopIndex - 1) {
+        offset = offset.plus(segments.get(i).dwellAtEnd());
+      }
     }
-    int intermediateStopsPassed = Math.max(0, stopIndex - 1);
-    return offset.plus(dwellTime.multipliedBy(intermediateStopsPassed));
+    return offset;
+  }
+
+  /** Стоянка на зупинці {@code stopIndex}; для першої та останньої — нуль. */
+  public Duration dwellAt(int stopIndex) {
+    checkStopIndex(stopIndex);
+    return stopIndex == 0 ? Duration.ZERO : segments.get(stopIndex - 1).dwellAtEnd();
   }
 
   /** Зсув часу відправлення із зупинки {@code stopIndex} (для останньої дорівнює прибуттю). */
   public Duration departureOffset(int stopIndex) {
-    Duration arrival = arrivalOffset(stopIndex);
-    boolean intermediate = stopIndex > 0 && stopIndex < stopCount() - 1;
-    return intermediate ? arrival.plus(dwellTime) : arrival;
+    return arrivalOffset(stopIndex).plus(dwellAt(stopIndex));
   }
 
   /** Орієнтовна тривалість рейсу від першої до останньої зупинки. */

@@ -51,6 +51,35 @@ class RouteTest {
   }
 
   @Test
+  void dwellIsPerStop() {
+    // Житомир 5 хв, Рівне 25 хв
+    Route custom =
+        new Route(
+            7,
+            "custom",
+            List.of(
+                new RouteSegment(KYIV, ZHYTOMYR, 140, Duration.ofMinutes(120), Duration.ofMinutes(5)),
+                new RouteSegment(ZHYTOMYR, RIVNE, 190, Duration.ofMinutes(150), Duration.ofMinutes(25)),
+                new RouteSegment(RIVNE, LUTSK, 75, Duration.ofMinutes(70))));
+    assertThat(custom.dwellAt(0)).isEqualTo(Duration.ZERO);
+    assertThat(custom.dwellAt(1)).isEqualTo(Duration.ofMinutes(5));
+    assertThat(custom.dwellAt(2)).isEqualTo(Duration.ofMinutes(25));
+    assertThat(custom.departureOffset(1)).isEqualTo(Duration.ofMinutes(125));
+    assertThat(custom.arrivalOffset(2)).isEqualTo(Duration.ofMinutes(275));
+    assertThat(custom.departureOffset(2)).isEqualTo(Duration.ofMinutes(300));
+    assertThat(custom.totalDuration()).isEqualTo(Duration.ofMinutes(370));
+  }
+
+  @Test
+  void finalStopHasNoDwell() {
+    List<RouteSegment> segments =
+        List.of(new RouteSegment(KYIV, ZHYTOMYR, 140, Duration.ofHours(2), Duration.ofMinutes(10)));
+    assertThatThrownBy(() -> new Route(1, "bad", segments))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("final stop");
+  }
+
+  @Test
   void travelTimeBetweenStops() {
     assertThat(route.travelTime("KYIV", "RIVNE")).isEqualTo(Duration.ofMinutes(280));
     assertThat(route.travelTime("ZHYTOMYR", "LUTSK")).isEqualTo(Duration.ofMinutes(230));

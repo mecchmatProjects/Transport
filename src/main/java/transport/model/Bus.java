@@ -10,6 +10,9 @@ import java.util.Objects;
  *
  * <p>Доступність у заданий період = робочий статус + відсутність перетину з періодами
  * недоступності (ТО, відпустка водія тощо).
+ *
+ * <p>{@code depotCityId} — місто, де автобус базується і звідки починає день. Від нього рахується
+ * перший порожній підгін до рейсу.
  */
 public class Bus {
 
@@ -17,12 +20,13 @@ public class Bus {
   private final String model;
   private final int seats;
   private final double luggageCapacityKg;
+  private final String depotCityId;
   private BusStatus status;
   private final List<TimeWindow> unavailablePeriods;
 
   /** Новий автобус у статусі {@link BusStatus#AVAILABLE}. */
-  public Bus(String id, String model, int seats, double luggageCapacityKg) {
-    this(id, model, seats, luggageCapacityKg, BusStatus.AVAILABLE, List.of());
+  public Bus(String id, String model, int seats, double luggageCapacityKg, String depotCityId) {
+    this(id, model, seats, luggageCapacityKg, depotCityId, BusStatus.AVAILABLE, List.of());
   }
 
   /** Повний конструктор (для завантаження зі сховища). */
@@ -31,12 +35,14 @@ public class Bus {
       String model,
       int seats,
       double luggageCapacityKg,
+      String depotCityId,
       BusStatus status,
       Collection<TimeWindow> unavailablePeriods) {
     this.id = Checks.requireText(id, "id");
     this.model = Checks.requireText(model, "model");
     this.seats = Checks.requirePositive(seats, "seats");
     this.luggageCapacityKg = Checks.requireNonNegative(luggageCapacityKg, "luggageCapacityKg");
+    this.depotCityId = Checks.requireText(depotCityId, "depotCityId");
     this.status = Objects.requireNonNull(status, "status");
     this.unavailablePeriods = new ArrayList<>(Objects.requireNonNull(unavailablePeriods));
   }
@@ -55,6 +61,10 @@ public class Bus {
 
   public double getLuggageCapacityKg() {
     return luggageCapacityKg;
+  }
+
+  public String getDepotCityId() {
+    return depotCityId;
   }
 
   public BusStatus getStatus() {
@@ -96,6 +106,6 @@ public class Bus {
   @Override
   public String toString() {
     return "Bus[" + id + ", " + model + ", seats=" + seats + ", luggage=" + luggageCapacityKg
-        + "kg, " + status + "]";
+        + "kg, depot " + depotCityId + ", " + status + "]";
   }
 }

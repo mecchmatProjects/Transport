@@ -23,7 +23,7 @@ class BusAndTariffTest {
 
   @Test
   void busAvailability() {
-    Bus bus = new Bus("AA1234", "Setra S 415", 52, 1500);
+    Bus bus = new Bus("AA1234", "Setra S 415", 52, 1500, "KYIV");
     assertThat(bus.isAvailableFor(window(8, 14))).isTrue();
 
     bus.addUnavailablePeriod(window(12, 18));
@@ -36,9 +36,19 @@ class BusAndTariffTest {
 
   @Test
   void busValidationAndIdentity() {
-    assertThatThrownBy(() -> new Bus("AA1234", "X", 0, 100))
+    assertThatThrownBy(() -> new Bus("AA1234", "X", 0, 100, "KYIV"))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThat(new Bus("AA1234", "A", 52, 1500)).isEqualTo(new Bus("AA1234", "B", 30, 800));
+    assertThat(new Bus("AA1234", "A", 52, 1500, "KYIV"))
+        .isEqualTo(new Bus("AA1234", "B", 30, 800, "LVIV"));
+  }
+
+  @Test
+  void busKeepsDepot() {
+    Bus bus = new Bus("AA1234", "Setra S 415", 52, 1500, "KYIV");
+    assertThat(bus.getDepotCityId()).isEqualTo("KYIV");
+    assertThat(bus.getLuggageCapacityKg()).isEqualTo(1500.0);
+    assertThatThrownBy(() -> new Bus("AA1234", "X", 52, 100, " "))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

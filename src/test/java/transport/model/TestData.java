@@ -18,7 +18,7 @@ final class TestData {
    * Відстані 140 + 190 + 75 = 405 км.
    */
   static Route kyivLutsk() {
-    return new Route(
+    return Route.withUniformDwell(
         12,
         "Kyiv - Lutsk",
         List.of(
