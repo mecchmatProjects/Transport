@@ -1,16 +1,20 @@
 package transport.repository.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import transport.model.BusStatus;
 import transport.model.Contact;
 import transport.model.LuggageStatus;
+import transport.model.Passenger;
 import transport.model.PassengerLuggage;
 import transport.model.Shipment;
+import transport.model.TicketStatus;
 import transport.model.TimeWindow;
 
 /**
@@ -69,5 +73,27 @@ final class ModelMixins {
         @JsonProperty("depotCityId") String depotCityId,
         @JsonProperty("status") BusStatus status,
         @JsonProperty("unavailablePeriods") Collection<TimeWindow> unavailablePeriods) {}
+  }
+
+  abstract static class TicketMixin {
+    @JsonCreator
+    TicketMixin(
+        @JsonProperty("number") String number,
+        @JsonProperty("tripId") String tripId,
+        @JsonProperty("passenger") Passenger passenger,
+        @JsonProperty("fromCityId") String fromCityId,
+        @JsonProperty("toCityId") String toCityId,
+        @JsonProperty("seatNumber") int seatNumber,
+        @JsonProperty("price") BigDecimal price,
+        @JsonProperty("soldAt") LocalDateTime soldAt,
+        @JsonProperty("status") TicketStatus status) {}
+
+    @JsonIgnore
+    abstract boolean isActive(); // похідне від status, у JSON не пишемо
+  }
+
+  abstract static class TariffMixin {
+    @JsonIgnore
+    abstract boolean isRouteSpecific();
   }
 }
