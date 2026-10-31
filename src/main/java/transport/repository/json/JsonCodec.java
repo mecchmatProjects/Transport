@@ -21,8 +21,12 @@ import transport.model.Bus;
 import transport.model.City;
 import transport.model.Luggage;
 import transport.model.PassengerLuggage;
+import transport.model.Route;
 import transport.model.RouteSegment;
 import transport.model.Shipment;
+import transport.model.Tariff;
+import transport.model.Ticket;
+import transport.model.Trip;
 
 /**
  * Читання і запис моделі в JSON. Єдине місце, де налаштовано Jackson; {@code JsonRepository}
@@ -31,7 +35,8 @@ import transport.model.Shipment;
  * <ul>
  *   <li>дати й тривалості — ISO-рядки ({@code "2026-09-23T08:00:00"}, {@code "PT2H30M"});
  *   <li>маршрути посилаються на міста за id, тому для читання маршрутів потрібен каталог міст:
- *       {@link #withCities(Collection)};
+ *       {@link #withCities(Collection)}; рейси так само посилаються на маршрути за номером:
+ *       {@link #withRoutes(Collection)};
  *   <li>багаж поліморфний, підклас — у полі {@code "kind"} ({@code PASSENGER} / {@code SHIPMENT}).
  *       Колекції пишіть через {@link #write(Object, TypeReference)}: через стирання типів Jackson
  *       інакше не знає, що елементи {@code List<Luggage>} — поліморфні, і не запише {@code kind};
@@ -45,16 +50,21 @@ public final class JsonCodec {
   /** Атрибут десеріалізації з каталогом міст {@code Map<String, City>}. */
   static final String CITIES_ATTRIBUTE = "transport.cities";
 
+  /** Атрибут десеріалізації з каталогом маршрутів {@code Map<Integer, Route>}. */
+  static final String ROUTES_ATTRIBUTE = "transport.routes";
+
   private final ObjectMapper mapper;
   private final Map<String, City> cities; // null — каталог не задано
+  private final Map<Integer, Route> routes; // null — каталог не задано
 
   public JsonCodec() {
-    this(createMapper(), null);
+    this(createMapper(), null, null);
   }
 
-  private JsonCodec(ObjectMapper mapper, Map<String, City> cities) {
+  private JsonCodec(ObjectMapper mapper, Map<String, City> cities, Map<Integer, Route> routes) {
     this.mapper = mapper;
     this.cities = cities;
+    this.routes = routes;
   }
 
   /** Налаштований {@link ObjectMapper} з усіма модулями й mix-in моделі. */
@@ -64,8 +74,12 @@ public final class JsonCodec {
     model.setMixInAnnotation(PassengerLuggage.class, ModelMixins.PassengerLuggageMixin.class);
     model.setMixInAnnotation(Shipment.class, ModelMixins.ShipmentMixin.class);
     model.setMixInAnnotation(Bus.class, ModelMixins.BusMixin.class);
+    model.setMixInAnnotation(Ticket.class, ModelMixins.TicketMixin.class);
+    model.setMixInAnnotation(Tariff.class, ModelMixins.TariffMixin.class);
     model.addSerializer(RouteSegment.class, new RouteSegmentJson.Serializer());
     model.addDeserializer(RouteSegment.class, new RouteSegmentJson.Deserializer());
+    model.addSerializer(Trip.class, new TripJson.Serializer());
+    model.addDeserializer(Trip.class, new TripJson.Deserializer());
 
     return new ObjectMapper()
         .registerModule(new JavaTimeModule())
@@ -85,7 +99,18 @@ public final class JsonCodec {
         throw new IllegalArgumentException("duplicate city id in catalogue: " + city.id());
       }
     }
-    return new JsonCodec(mapper, Map.copyOf(byId));
+    return new JsonCodec(mapper, Map.copyOf(byId), routes);
+  }
+
+  /** Копія кодека, яка під час читання розв'язує номери маршрутів через цей каталог. */
+  public JsonCodec withRoutes(Collection<Route> catalogue) {
+    Map<Integer, Route> byNumber = new LinkedHashMap<>();
+    for (Route route : catalogue) {
+      if (byNumber.put(route.number(), route) != null) {
+        throw new IllegalArgumentException("duplicate route number in catalogue: " + route.number());
+      }
+    }
+    return new JsonCodec(mapper, cities, Map.copyOf(byNumber));
   }
 
   public String write(Object value) {
@@ -163,7 +188,13 @@ public final class JsonCodec {
   }
 
   private ObjectReader withCatalogue(ObjectReader reader) {
-    return cities == null ? reader : reader.withAttribute(CITIES_ATTRIBUTE, cities);
+    if (cities != null) {
+      reader = reader.withAttribute(CITIES_ATTRIBUTE, cities);
+    }
+    if (routes != null) {
+      reader = reader.withAttribute(ROUTES_ATTRIBUTE, routes);
+    }
+    return reader;
   }
 
   private static String message(IOException e) {
