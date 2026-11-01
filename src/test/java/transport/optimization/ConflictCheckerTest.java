@@ -265,6 +265,15 @@ class ConflictCheckerTest {
     assertThat(conflicts()).isEmpty();
   }
 
+  @Test
+  void departureOutsideFlex() {
+    trip("D1", KYIV_ZHYTOMYR, "08:00");
+    assignments.set(0, new Assignment("D1", "BUS1", at("08:31")));
+    assertThat(conflicts()).containsExactly(ConflictType.TIME_WINDOW);
+    assignments.set(0, new Assignment("D1", "BUS1", at("08:30")));
+    assertThat(conflicts()).isEmpty();
+  }
+
   private ProblemInstance problem() {
     return new ProblemInstance(GRAPH, List.of(bus("KYIV")), demands, CONSTRAINTS);
   }

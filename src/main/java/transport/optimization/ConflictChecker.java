@@ -33,15 +33,14 @@ public final class ConflictChecker {
     return conflicts;
   }
 
-  /** Розклад не змінюється. Час поза межами ±flex теж вважається недопустимим. */
+  /**
+   * Розклад не змінюється. Решта рейсів автобуса має бути без конфліктів, інакше завжди false,
+   * тому LS і SA стартують з розкладу Greedy.
+   */
   public boolean canAssign(Schedule schedule, Assignment candidate, ProblemInstance problem) {
     Map<String, TripDemand> demands = demandsById(problem);
     Bus bus = find(busesById(problem), candidate.busId(), "bus");
-    TripDemand demand = find(demands, candidate.demandId(), "demand");
-    if (candidate.departure().isBefore(demand.earliestDeparture())
-        || candidate.departure().isAfter(demand.latestDeparture())) {
-      return false;
-    }
+    find(demands, candidate.demandId(), "demand");
     List<Assignment> assignments = new ArrayList<>(schedule.assignmentsOf(candidate.busId()));
     assignments.removeIf(a -> a.demandId().equals(candidate.demandId()));
     assignments.add(candidate);
@@ -74,6 +73,9 @@ public final class ConflictChecker {
       if (demand.expectedPassengers() > bus.getSeats()
           || demand.expectedLuggageKg() > bus.getLuggageCapacityKg()) {
         conflicts.add(new Conflict(ConflictType.CAPACITY, busId, current.demandId()));
+      }
+      if (start.isBefore(demand.earliestDeparture()) || start.isAfter(demand.latestDeparture())) {
+        conflicts.add(new Conflict(ConflictType.TIME_WINDOW, busId, current.demandId()));
       }
 
       // хвилини порожнього підгону перед рейсом; -1, якщо через конфлікт його не рахуємо
