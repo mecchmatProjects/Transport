@@ -61,8 +61,10 @@ public final class ConflictChecker {
     List<Conflict> conflicts = new ArrayList<>();
     Map<LocalDate, Duration> workPerDay = new TreeMap<>();
 
-    Assignment prev = null;
-    TripDemand prevDemand = null;
+    record Placed(Assignment assignment, TripDemand demand, LocalDateTime end) {}
+    List<Placed> placed = new ArrayList<>();
+    // рейс, після якого автобус звільняється найпізніше
+    Placed last = null;
     for (Assignment current : assignments) {
       TripDemand demand = find(demands, current.demandId(), "demand");
       LocalDateTime start = current.departure();
@@ -76,7 +78,8 @@ public final class ConflictChecker {
 
       // хвилини порожнього підгону перед рейсом; -1, якщо через конфлікт його не рахуємо
       int deadhead;
-      if (prev == null) {
+      List<Placed> overlapping = placed.stream().filter(p -> start.isBefore(p.end())).toList();
+      if (last == null) {
         deadhead = graph.deadheadMinutes(bus.getDepotCityId(), demand.originCityId(), speed);
         if (deadhead == Integer.MAX_VALUE
             || start.minusMinutes(deadhead).isBefore(day.atStartOfDay())) {
@@ -84,20 +87,22 @@ public final class ConflictChecker {
               new Conflict(ConflictType.WRONG_LOCATION, busId, "depot -> " + current.demandId()));
           deadhead = -1;
         }
+      } else if (!overlapping.isEmpty()) {
+        for (Placed p : overlapping) {
+          String pair = p.assignment().demandId() + " -> " + current.demandId();
+          conflicts.add(new Conflict(ConflictType.OVERLAP, busId, pair));
+        }
+        deadhead = -1;
       } else {
-        String pair = prev.demandId() + " -> " + current.demandId();
-        LocalDateTime prevEnd = prev.departure().plus(prevDemand.duration());
-        String from = prevDemand.destinationCityId();
+        String pair = last.assignment().demandId() + " -> " + current.demandId();
+        String from = last.demand().destinationCityId();
         String to = demand.originCityId();
         deadhead = graph.deadheadMinutes(from, to, speed);
-        if (start.isBefore(prevEnd)) {
-          conflicts.add(new Conflict(ConflictType.OVERLAP, busId, pair));
-          deadhead = -1;
-        } else if (deadhead == Integer.MAX_VALUE) {
+        if (deadhead == Integer.MAX_VALUE) {
           conflicts.add(new Conflict(ConflictType.WRONG_LOCATION, busId, pair));
           deadhead = -1;
         } else {
-          LocalDateTime ready = prevEnd.plusMinutes(deadhead).plus(constraints.minTurnaround());
+          LocalDateTime ready = last.end().plusMinutes(deadhead).plus(constraints.minTurnaround());
           if (start.isBefore(ready)) {
             ConflictType type =
                 from.equals(to) ? ConflictType.TURNAROUND : ConflictType.WRONG_LOCATION;
@@ -114,8 +119,11 @@ public final class ConflictChecker {
 
       Duration work = demand.duration().plusMinutes(Math.max(deadhead, 0));
       workPerDay.merge(day, work, Duration::plus);
-      prev = current;
-      prevDemand = demand;
+      Placed now = new Placed(current, demand, end);
+      placed.add(now);
+      if (last == null || end.isAfter(last.end())) {
+        last = now;
+      }
     }
 
     workPerDay.forEach(

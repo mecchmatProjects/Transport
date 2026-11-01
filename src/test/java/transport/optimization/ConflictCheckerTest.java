@@ -69,11 +69,19 @@ class ConflictCheckerTest {
     trip(id, route, at(time), 40, 500);
   }
 
-  private List<ConflictType> conflicts(Bus bus) {
+  private List<Conflict> check(Bus bus) {
     ProblemInstance problem = new ProblemInstance(GRAPH, List.of(bus), demands, CONSTRAINTS);
     Schedule schedule = new Schedule(demands.stream().map(TripDemand::id).toList());
     assignments.forEach(schedule::assign);
-    return checker.check(schedule, problem).stream().map(Conflict::type).toList();
+    return checker.check(schedule, problem);
+  }
+
+  private List<ConflictType> conflicts(Bus bus) {
+    return check(bus).stream().map(Conflict::type).toList();
+  }
+
+  private List<String> described() {
+    return check(bus("KYIV")).stream().map(c -> c.type() + " " + c.description()).toList();
   }
 
   private List<ConflictType> conflicts() {
@@ -108,6 +116,23 @@ class ConflictCheckerTest {
     trip("R1", long1, "08:00");
     trip("R2", long2, "10:30");
     assertThat(conflicts()).containsExactly(ConflictType.OVERLAP);
+  }
+
+  @Test
+  void longTripOverlapsSeveralLaterTrips() {
+    trip("A", route(5, KYIV, ZHYTOMYR, 120, 360), "08:00");
+    trip("B", ZHYTOMYR_KYIV, "09:00");
+    trip("C", KYIV_ZHYTOMYR, "11:30");
+    assertThat(described()).containsExactly("OVERLAP A -> B", "OVERLAP A -> C");
+  }
+
+  @Test
+  void nextTripCountsFromTripThatEndsLast() {
+    // B закінчується о 10:00, але автобус вільний лише після A о 14:00
+    trip("A", route(5, KYIV, ZHYTOMYR, 120, 360), "08:00");
+    trip("B", RIVNE_ZHYTOMYR, "09:00");
+    trip("D", ZHYTOMYR_KYIV, "14:10");
+    assertThat(described()).containsExactly("OVERLAP A -> B", "TURNAROUND A -> D");
   }
 
   @Test
