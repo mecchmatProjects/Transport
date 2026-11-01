@@ -8,13 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Рейс — конкретний виїзд за маршрутом у певну дату й час (README §3).
- *
- * <p>Автобус посилається за id і може бути ще не призначений ({@code null}) — його призначає
- * оптимізатор або диспетчер. Квитки й багаж посилаються на рейс за {@link #getId()} і
- * зберігаються у своїх репозиторіях, щоб не було циклічних посилань.
- */
 public class Trip {
 
   private final String id;
@@ -24,12 +17,10 @@ public class Trip {
   private String busId;
   private TripStatus status;
 
-  /** Новий рейс у статусі {@link TripStatus#SCHEDULED} без автобуса. */
   public Trip(String id, Route route, LocalDate date, LocalTime departureTime) {
     this(id, route, date, departureTime, null, TripStatus.SCHEDULED);
   }
 
-  /** Повний конструктор (для завантаження зі сховища). */
   public Trip(
       String id,
       Route route,
@@ -74,7 +65,6 @@ public class Trip {
     return status;
   }
 
-  /** Призначає автобус. Дозволено лише до відправлення. */
   public void assignBus(String busId) {
     requireScheduled("assign bus");
     this.busId = Checks.requireText(busId, "busId");
@@ -85,13 +75,11 @@ public class Trip {
     this.busId = null;
   }
 
-  /** Змінює час відправлення (крок локального пошуку). Дозволено лише до відправлення. */
   public void reschedule(LocalTime newDepartureTime) {
     requireScheduled("reschedule");
     this.departureTime = Objects.requireNonNull(newDepartureTime, "newDepartureTime");
   }
 
-  /** Переводить рейс у новий статус за правилами {@link TripStatus}. */
   public void changeStatus(TripStatus next) {
     this.status = Transitional.transition(status, next);
   }
@@ -104,22 +92,18 @@ public class Trip {
     return departure().plus(route.totalDuration());
   }
 
-  /** Час, коли автобус зайнятий цим рейсом. */
   public TimeWindow timeWindow() {
     return new TimeWindow(departure(), arrival());
   }
 
-  /** Відправлення з міста {@code cityId}. */
   public LocalDateTime departureFrom(String cityId) {
     return departure().plus(route.departureOffset(requireStop(cityId)));
   }
 
-  /** Прибуття в місто {@code cityId}. */
   public LocalDateTime arrivalAt(String cityId) {
     return departure().plus(route.arrivalOffset(requireStop(cityId)));
   }
 
-  /** Розклад зупинок цього рейсу. */
   public List<ScheduledStop> scheduledStops() {
     List<City> stops = route.stops();
     List<ScheduledStop> result = new ArrayList<>(stops.size());
@@ -135,11 +119,7 @@ public class Trip {
     return List.copyOf(result);
   }
 
-  /**
-   * Чи не може один автобус виконати і цей, і інший рейс (README §9). Між рейсами потрібен час на
-   * розворот {@code turnaround}, а наступний рейс має починатись у місті, де закінчився попередній,
-   * — це вже перевіряє оптимізатор/{@code ScheduleService}.
-   */
+  /** Перекриття з урахуванням розвороту; збіг міст перевіряє оптимізатор. */
   public boolean conflictsWith(Trip other, Duration turnaround) {
     if (this.equals(other)) {
       return false;

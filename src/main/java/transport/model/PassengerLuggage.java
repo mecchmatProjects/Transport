@@ -2,12 +2,10 @@ package transport.model;
 
 import java.math.BigDecimal;
 
-/** Багаж пасажира — прив'язаний до квитка, їде на тому ж рейсі й ділянці. */
 public final class PassengerLuggage extends Luggage {
 
   private final String ticketNumber;
 
-  /** Щойно зареєстрований багаж. Рейс і міста беруться з квитка. */
   public PassengerLuggage(
       String id, Ticket ticket, double weightKg, double volumeM3, BigDecimal price) {
     this(
@@ -22,7 +20,6 @@ public final class PassengerLuggage extends Luggage {
         ticket.getNumber());
   }
 
-  /** Повний конструктор (для завантаження зі сховища). */
   public PassengerLuggage(
       String id,
       String tripId,

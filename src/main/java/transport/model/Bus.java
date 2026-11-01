@@ -5,15 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Автобус (README §3). Ідентичність — за {@link #getId()} (держномер).
- *
- * <p>Доступність у заданий період = робочий статус + відсутність перетину з періодами
- * недоступності (ТО, відпустка водія тощо).
- *
- * <p>{@code depotCityId} — місто, де автобус базується і звідки починає день. Від нього рахується
- * перший порожній підгін до рейсу.
- */
 public class Bus {
 
   private final String id;
@@ -24,12 +15,10 @@ public class Bus {
   private BusStatus status;
   private final List<TimeWindow> unavailablePeriods;
 
-  /** Новий автобус у статусі {@link BusStatus#AVAILABLE}. */
   public Bus(String id, String model, int seats, double luggageCapacityKg, String depotCityId) {
     this(id, model, seats, luggageCapacityKg, depotCityId, BusStatus.AVAILABLE, List.of());
   }
 
-  /** Повний конструктор (для завантаження зі сховища). */
   public Bus(
       String id,
       String model,
@@ -87,7 +76,6 @@ public class Bus {
     return unavailablePeriods.remove(period);
   }
 
-  /** Чи можна використати автобус протягом усього вікна {@code window}. */
   public boolean isAvailableFor(TimeWindow window) {
     return status.isOperational()
         && unavailablePeriods.stream().noneMatch(period -> period.overlaps(window));

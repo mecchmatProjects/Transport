@@ -13,7 +13,6 @@ import transport.exception.DuplicateEntityException;
 import transport.exception.EntityNotFoundException;
 import transport.model.City;
 
-/** Перевіряє default-методи {@link Repository} на мінімальній реалізації. */
 class RepositoryDefaultsTest {
 
   private static final class MapRepository implements Repository<City, String> {

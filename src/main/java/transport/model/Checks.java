@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Objects;
 
-/** Перевірки інваріантів для конструкторів моделі. Кидають {@link IllegalArgumentException}. */
 final class Checks {
 
   private Checks() {}

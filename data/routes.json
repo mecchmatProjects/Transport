@@ -1,0 +1,266 @@
+[
+  {
+    "number": 1,
+    "name": "Kyiv - Lutsk",
+    "segments": [
+      {
+        "from": "KYIV",
+        "to": "ZHYTOMYR",
+        "distanceKm": 140.0,
+        "travelTime": "PT2H",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "ZHYTOMYR",
+        "to": "RIVNE",
+        "distanceKm": 190.0,
+        "travelTime": "PT2H45M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "RIVNE",
+        "to": "LUTSK",
+        "distanceKm": 75.0,
+        "travelTime": "PT1H5M"
+      }
+    ]
+  },
+  {
+    "number": 2,
+    "name": "Lutsk - Kyiv",
+    "segments": [
+      {
+        "from": "LUTSK",
+        "to": "RIVNE",
+        "distanceKm": 75.0,
+        "travelTime": "PT1H5M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "RIVNE",
+        "to": "ZHYTOMYR",
+        "distanceKm": 190.0,
+        "travelTime": "PT2H45M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "ZHYTOMYR",
+        "to": "KYIV",
+        "distanceKm": 140.0,
+        "travelTime": "PT2H"
+      }
+    ]
+  },
+  {
+    "number": 3,
+    "name": "Kyiv - Odesa",
+    "segments": [
+      {
+        "from": "KYIV",
+        "to": "BILA_TSERKVA",
+        "distanceKm": 85.0,
+        "travelTime": "PT1H15M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "BILA_TSERKVA",
+        "to": "UMAN",
+        "distanceKm": 125.0,
+        "travelTime": "PT1H50M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "UMAN",
+        "to": "ODESA",
+        "distanceKm": 270.0,
+        "travelTime": "PT3H55M"
+      }
+    ]
+  },
+  {
+    "number": 4,
+    "name": "Odesa - Kyiv",
+    "segments": [
+      {
+        "from": "ODESA",
+        "to": "UMAN",
+        "distanceKm": 270.0,
+        "travelTime": "PT3H55M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "UMAN",
+        "to": "BILA_TSERKVA",
+        "distanceKm": 125.0,
+        "travelTime": "PT1H50M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "BILA_TSERKVA",
+        "to": "KYIV",
+        "distanceKm": 85.0,
+        "travelTime": "PT1H15M"
+      }
+    ]
+  },
+  {
+    "number": 5,
+    "name": "Kyiv - Zaporizhzhia",
+    "segments": [
+      {
+        "from": "KYIV",
+        "to": "CHERKASY",
+        "distanceKm": 190.0,
+        "travelTime": "PT2H45M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "CHERKASY",
+        "to": "KREMENCHUK",
+        "distanceKm": 130.0,
+        "travelTime": "PT1H55M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "KREMENCHUK",
+        "to": "KAMIANSKE",
+        "distanceKm": 120.0,
+        "travelTime": "PT1H45M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "KAMIANSKE",
+        "to": "DNIPRO",
+        "distanceKm": 35.0,
+        "travelTime": "PT30M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "DNIPRO",
+        "to": "ZAPORIZHZHIA",
+        "distanceKm": 85.0,
+        "travelTime": "PT1H15M"
+      }
+    ]
+  },
+  {
+    "number": 6,
+    "name": "Zaporizhzhia - Kyiv",
+    "segments": [
+      {
+        "from": "ZAPORIZHZHIA",
+        "to": "DNIPRO",
+        "distanceKm": 85.0,
+        "travelTime": "PT1H15M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "DNIPRO",
+        "to": "KAMIANSKE",
+        "distanceKm": 35.0,
+        "travelTime": "PT30M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "KAMIANSKE",
+        "to": "KREMENCHUK",
+        "distanceKm": 120.0,
+        "travelTime": "PT1H45M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "KREMENCHUK",
+        "to": "CHERKASY",
+        "distanceKm": 130.0,
+        "travelTime": "PT1H55M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "CHERKASY",
+        "to": "KYIV",
+        "distanceKm": 190.0,
+        "travelTime": "PT2H45M"
+      }
+    ]
+  },
+  {
+    "number": 7,
+    "name": "Kyiv - Lviv",
+    "segments": [
+      {
+        "from": "KYIV",
+        "to": "ZHYTOMYR",
+        "distanceKm": 140.0,
+        "travelTime": "PT2H",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "ZHYTOMYR",
+        "to": "VINNYTSIA",
+        "distanceKm": 125.0,
+        "travelTime": "PT1H50M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "VINNYTSIA",
+        "to": "KHMELNYTSKYI",
+        "distanceKm": 120.0,
+        "travelTime": "PT1H45M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "KHMELNYTSKYI",
+        "to": "TERNOPIL",
+        "distanceKm": 115.0,
+        "travelTime": "PT1H40M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "TERNOPIL",
+        "to": "LVIV",
+        "distanceKm": 130.0,
+        "travelTime": "PT1H55M"
+      }
+    ]
+  },
+  {
+    "number": 8,
+    "name": "Lviv - Kyiv",
+    "segments": [
+      {
+        "from": "LVIV",
+        "to": "TERNOPIL",
+        "distanceKm": 130.0,
+        "travelTime": "PT1H55M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "TERNOPIL",
+        "to": "KHMELNYTSKYI",
+        "distanceKm": 115.0,
+        "travelTime": "PT1H40M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "KHMELNYTSKYI",
+        "to": "VINNYTSIA",
+        "distanceKm": 120.0,
+        "travelTime": "PT1H45M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "VINNYTSIA",
+        "to": "ZHYTOMYR",
+        "distanceKm": 125.0,
+        "travelTime": "PT1H50M",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "ZHYTOMYR",
+        "to": "KYIV",
+        "distanceKm": 140.0,
+        "travelTime": "PT2H"
+      }
+    ]
+  }
+]

@@ -73,6 +73,14 @@ class JsonCodecTest {
   }
 
   @Test
+  void routeSegmentWithUnknownFieldFails() {
+    String json = codec.write(route()).replace("\"distanceKm\"", "\"distanseKm\"");
+    assertThatThrownBy(() -> codec.read(json, Route.class))
+        .isInstanceOf(StorageException.class)
+        .hasMessageContaining("unknown field 'distanseKm'");
+  }
+
+  @Test
   void routeWithUnknownCityFails() {
     String json = codec.write(route());
     JsonCodec withoutRivne = new JsonCodec().withCities(List.of(KYIV, ZHYTOMYR));

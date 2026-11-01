@@ -1,9 +1,5 @@
 package transport.exception;
 
-/**
- * На рейсі немає вільного місця на всьому відрізку {@code from → to}: хоча б на одній ділянці
- * всередині відрізка зайняті всі місця (README §7).
- */
 public class NoSeatsAvailableException extends CapacityExceededException {
 
   private static final long serialVersionUID = 1L;

@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-/** Спільні фікстури для тестів моделі: маршрут Kyiv → Zhytomyr → Rivne → Lutsk з README. */
 final class TestData {
 
   static final City KYIV = new City("KYIV", "Kyiv", 50.4501, 30.5234);
@@ -13,10 +12,7 @@ final class TestData {
   static final City RIVNE = new City("RIVNE", "Rivne", 50.6199, 26.2516);
   static final City LUTSK = new City("LUTSK", "Lutsk", 50.7472, 25.3254);
 
-  /**
-   * Їзда 2:00 + 2:30 + 1:10, стоянки по 10 хв на двох проміжних зупинках → тривалість 6:00.
-   * Відстані 140 + 190 + 75 = 405 км.
-   */
+  /** 2:00 + 2:30 + 1:10 + 2 × 10 хв стоянки = 6:00; 140 + 190 + 75 = 405 км */
   static Route kyivLutsk() {
     return Route.withUniformDwell(
         12,

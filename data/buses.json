@@ -1,0 +1,115 @@
+[
+  {
+    "id": "AA1234AB",
+    "model": "Setra S 515 HD",
+    "seats": 49,
+    "luggageCapacityKg": 1500.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "AA2345AB",
+    "model": "Setra S 515 HD",
+    "seats": 49,
+    "luggageCapacityKg": 1500.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "AA3456AB",
+    "model": "Neoplan Tourliner",
+    "seats": 51,
+    "luggageCapacityKg": 1500.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "AA4567AB",
+    "model": "Neoplan Tourliner",
+    "seats": 51,
+    "luggageCapacityKg": 1500.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "AA5678AB",
+    "model": "MAN Lion's Coach",
+    "seats": 51,
+    "luggageCapacityKg": 1400.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": [
+      {
+        "start": "2026-11-10T00:00:00",
+        "end": "2026-11-12T23:59:00"
+      }
+    ]
+  },
+  {
+    "id": "AA6789AB",
+    "model": "Mercedes-Benz Sprinter",
+    "seats": 20,
+    "luggageCapacityKg": 300.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "BC1234AB",
+    "model": "Mercedes-Benz Tourismo",
+    "seats": 49,
+    "luggageCapacityKg": 1400.0,
+    "depotCityId": "LVIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "BC2345AB",
+    "model": "Mercedes-Benz Tourismo",
+    "seats": 49,
+    "luggageCapacityKg": 1400.0,
+    "depotCityId": "LVIV",
+    "status": "MAINTENANCE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "BH1234AB",
+    "model": "MAN Lion's Coach",
+    "seats": 51,
+    "luggageCapacityKg": 1400.0,
+    "depotCityId": "ODESA",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "BH2345AB",
+    "model": "Mercedes-Benz Sprinter",
+    "seats": 20,
+    "luggageCapacityKg": 300.0,
+    "depotCityId": "ODESA",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "AE1234AB",
+    "model": "Neoplan Tourliner",
+    "seats": 51,
+    "luggageCapacityKg": 1500.0,
+    "depotCityId": "DNIPRO",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "AE2345AB",
+    "model": "Setra S 515 HD",
+    "seats": 49,
+    "luggageCapacityKg": 1500.0,
+    "depotCityId": "DNIPRO",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  }
+]

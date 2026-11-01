@@ -21,51 +21,46 @@ import transport.model.Bus;
 import transport.model.City;
 import transport.model.Luggage;
 import transport.model.PassengerLuggage;
+import transport.model.Route;
 import transport.model.RouteSegment;
 import transport.model.Shipment;
+import transport.model.Tariff;
+import transport.model.Ticket;
+import transport.model.Trip;
 
-/**
- * Читання і запис моделі в JSON. Єдине місце, де налаштовано Jackson; {@code JsonRepository}
- * (K1) працює через нього.
- *
- * <ul>
- *   <li>дати й тривалості — ISO-рядки ({@code "2026-09-23T08:00:00"}, {@code "PT2H30M"});
- *   <li>маршрути посилаються на міста за id, тому для читання маршрутів потрібен каталог міст:
- *       {@link #withCities(Collection)};
- *   <li>багаж поліморфний, підклас — у полі {@code "kind"} ({@code PASSENGER} / {@code SHIPMENT}).
- *       Колекції пишіть через {@link #write(Object, TypeReference)}: через стирання типів Jackson
- *       інакше не знає, що елементи {@code List<Luggage>} — поліморфні, і не запише {@code kind};
- *   <li>невідомі поля — помилка: це ловить одруківки в JSON, який редагують руками.
- * </ul>
- *
- * Будь-яка помилка вводу-виводу чи формату загортається в {@link StorageException}.
- */
+/** Єдине місце налаштування Jackson; маршрути й рейси читаються лише з каталогом. */
 public final class JsonCodec {
 
-  /** Атрибут десеріалізації з каталогом міст {@code Map<String, City>}. */
   static final String CITIES_ATTRIBUTE = "transport.cities";
+
+  static final String ROUTES_ATTRIBUTE = "transport.routes";
 
   private final ObjectMapper mapper;
   private final Map<String, City> cities; // null — каталог не задано
+  private final Map<Integer, Route> routes;
 
   public JsonCodec() {
-    this(createMapper(), null);
+    this(createMapper(), null, null);
   }
 
-  private JsonCodec(ObjectMapper mapper, Map<String, City> cities) {
+  private JsonCodec(ObjectMapper mapper, Map<String, City> cities, Map<Integer, Route> routes) {
     this.mapper = mapper;
     this.cities = cities;
+    this.routes = routes;
   }
 
-  /** Налаштований {@link ObjectMapper} з усіма модулями й mix-in моделі. */
   public static ObjectMapper createMapper() {
     SimpleModule model = new SimpleModule("transport-model");
     model.setMixInAnnotation(Luggage.class, ModelMixins.LuggageMixin.class);
     model.setMixInAnnotation(PassengerLuggage.class, ModelMixins.PassengerLuggageMixin.class);
     model.setMixInAnnotation(Shipment.class, ModelMixins.ShipmentMixin.class);
     model.setMixInAnnotation(Bus.class, ModelMixins.BusMixin.class);
+    model.setMixInAnnotation(Ticket.class, ModelMixins.TicketMixin.class);
+    model.setMixInAnnotation(Tariff.class, ModelMixins.TariffMixin.class);
     model.addSerializer(RouteSegment.class, new RouteSegmentJson.Serializer());
     model.addDeserializer(RouteSegment.class, new RouteSegmentJson.Deserializer());
+    model.addSerializer(Trip.class, new TripJson.Serializer());
+    model.addDeserializer(Trip.class, new TripJson.Deserializer());
 
     return new ObjectMapper()
         .registerModule(new JavaTimeModule())
@@ -77,7 +72,6 @@ public final class JsonCodec {
         .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
   }
 
-  /** Копія кодека, яка під час читання розв'язує id міст через цей каталог. */
   public JsonCodec withCities(Collection<City> catalogue) {
     Map<String, City> byId = new LinkedHashMap<>();
     for (City city : catalogue) {
@@ -85,7 +79,17 @@ public final class JsonCodec {
         throw new IllegalArgumentException("duplicate city id in catalogue: " + city.id());
       }
     }
-    return new JsonCodec(mapper, Map.copyOf(byId));
+    return new JsonCodec(mapper, Map.copyOf(byId), routes);
+  }
+
+  public JsonCodec withRoutes(Collection<Route> catalogue) {
+    Map<Integer, Route> byNumber = new LinkedHashMap<>();
+    for (Route route : catalogue) {
+      if (byNumber.put(route.number(), route) != null) {
+        throw new IllegalArgumentException("duplicate route number in catalogue: " + route.number());
+      }
+    }
+    return new JsonCodec(mapper, cities, Map.copyOf(byNumber));
   }
 
   public String write(Object value) {
@@ -129,11 +133,12 @@ public final class JsonCodec {
       Path dir = file.toAbsolutePath().getParent();
       Files.createDirectories(dir);
       Path tmp = Files.createTempFile(dir, file.getFileName().toString(), ".tmp");
-      Files.writeString(tmp, json);
       try {
-        Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-      } catch (AtomicMoveNotSupportedException e) {
-        Files.move(tmp, file, StandardCopyOption.REPLACE_EXISTING);
+        Files.writeString(tmp, json);
+        move(tmp, file);
+      } catch (IOException e) {
+        deleteQuietly(tmp, e);
+        throw e;
       }
     } catch (IOException e) {
       throw new StorageException("cannot write " + file + ": " + e.getMessage(), e);
@@ -154,6 +159,22 @@ public final class JsonCodec {
     }
   }
 
+  private static void move(Path from, Path to) throws IOException {
+    try {
+      Files.move(from, to, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+    } catch (AtomicMoveNotSupportedException e) {
+      Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+    }
+  }
+
+  private static void deleteQuietly(Path tmp, IOException cause) {
+    try {
+      Files.deleteIfExists(tmp);
+    } catch (IOException e) {
+      cause.addSuppressed(e);
+    }
+  }
+
   private ObjectReader reader(Class<?> type) {
     return withCatalogue(mapper.readerFor(type));
   }
@@ -163,7 +184,13 @@ public final class JsonCodec {
   }
 
   private ObjectReader withCatalogue(ObjectReader reader) {
-    return cities == null ? reader : reader.withAttribute(CITIES_ATTRIBUTE, cities);
+    if (cities != null) {
+      reader = reader.withAttribute(CITIES_ATTRIBUTE, cities);
+    }
+    if (routes != null) {
+      reader = reader.withAttribute(ROUTES_ATTRIBUTE, routes);
+    }
+    return reader;
   }
 
   private static String message(IOException e) {

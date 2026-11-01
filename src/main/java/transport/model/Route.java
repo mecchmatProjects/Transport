@@ -7,20 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-/**
- * Маршрут — незмінна послідовність зупинок (README §3), напр. {@code Kyiv → Zhytomyr → Rivne →
- * Lutsk}. Конкретний виїзд за маршрутом — це {@link Trip}.
- *
- * <p>Зупинки нумеруються з 0. Ділянка {@code i} з'єднує зупинки {@code i} та {@code i + 1}. Квиток
- * {@code from → to} займає ділянки {@code [index(from); index(to))}.
- *
- * <p>Стоянка задається окремо для кожної проміжної зупинки ({@link RouteSegment#dwellAtEnd()}). На
- * кінцевій стоянки немає.
- *
- * @param number номер маршруту (> 0)
- * @param name назва
- * @param segments ділянки в порядку руху, кожна наступна починається там, де закінчилась попередня
- */
+/** Зупинки нумеруються з 0; ділянка {@code i} з'єднує зупинки {@code i} та {@code i + 1}. */
 public record Route(int number, String name, List<RouteSegment> segments) {
 
   public Route {
@@ -49,10 +36,6 @@ public record Route(int number, String name, List<RouteSegment> segments) {
     }
   }
 
-  /**
-   * Маршрут з однаковою стоянкою на всіх проміжних зупинках (зручно для seed-даних і тестів).
-   * Наявні {@code dwellAtEnd} у ділянках перезаписуються.
-   */
   public static Route withUniformDwell(
       int number, String name, List<RouteSegment> segments, Duration dwell) {
     List<RouteSegment> result = new ArrayList<>(segments.size());
@@ -63,7 +46,6 @@ public record Route(int number, String name, List<RouteSegment> segments) {
     return new Route(number, name, result);
   }
 
-  /** Усі зупинки по порядку. */
   public List<City> stops() {
     List<City> stops = new ArrayList<>(segments.size() + 1);
     stops.add(segments.get(0).from());
@@ -85,7 +67,6 @@ public record Route(int number, String name, List<RouteSegment> segments) {
     return segments.get(segments.size() - 1).to();
   }
 
-  /** Індекс зупинки або {@code -1}, якщо міста на маршруті немає. */
   public int indexOf(String cityId) {
     if (origin().id().equals(cityId)) {
       return 0;
@@ -98,18 +79,12 @@ public record Route(int number, String name, List<RouteSegment> segments) {
     return -1;
   }
 
-  /** Чи можна проїхати цим маршрутом з {@code fromCityId} до {@code toCityId} (у напрямку руху). */
   public boolean servesDirection(String fromCityId, String toCityId) {
     int from = indexOf(fromCityId);
     int to = indexOf(toCityId);
     return from >= 0 && to > from;
   }
 
-  /**
-   * Пара індексів зупинок {@code [from, to]} для поїздки.
-   *
-   * @throws IllegalArgumentException якщо маршрут не обслуговує цей напрямок
-   */
   public int[] stopRange(String fromCityId, String toCityId) {
     if (!servesDirection(fromCityId, toCityId)) {
       throw new IllegalArgumentException(
@@ -122,7 +97,6 @@ public record Route(int number, String name, List<RouteSegment> segments) {
     return segments.stream().mapToDouble(RouteSegment::distanceKm).sum();
   }
 
-  /** Відстань між двома зупинками маршруту, км. */
   public double distanceKm(String fromCityId, String toCityId) {
     int[] range = stopRange(fromCityId, toCityId);
     double km = 0;
@@ -132,7 +106,6 @@ public record Route(int number, String name, List<RouteSegment> segments) {
     return km;
   }
 
-  /** Зсув часу прибуття на зупинку {@code stopIndex} відносно відправлення з першої. */
   public Duration arrivalOffset(int stopIndex) {
     checkStopIndex(stopIndex);
     Duration offset = Duration.ZERO;
@@ -145,23 +118,19 @@ public record Route(int number, String name, List<RouteSegment> segments) {
     return offset;
   }
 
-  /** Стоянка на зупинці {@code stopIndex}; для першої та останньої — нуль. */
   public Duration dwellAt(int stopIndex) {
     checkStopIndex(stopIndex);
     return stopIndex == 0 ? Duration.ZERO : segments.get(stopIndex - 1).dwellAtEnd();
   }
 
-  /** Зсув часу відправлення із зупинки {@code stopIndex} (для останньої дорівнює прибуттю). */
   public Duration departureOffset(int stopIndex) {
     return arrivalOffset(stopIndex).plus(dwellAt(stopIndex));
   }
 
-  /** Орієнтовна тривалість рейсу від першої до останньої зупинки. */
   public Duration totalDuration() {
     return arrivalOffset(stopCount() - 1);
   }
 
-  /** Час у дорозі між двома зупинками маршруту, разом зі стоянками між ними. */
   public Duration travelTime(String fromCityId, String toCityId) {
     int[] range = stopRange(fromCityId, toCityId);
     return arrivalOffset(range[1]).minus(departureOffset(range[0]));

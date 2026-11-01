@@ -1,0 +1,183 @@
+[
+  {
+    "id": "R1",
+    "routeNumber": 1,
+    "departureTimes": [
+      "07:00",
+      "13:00"
+    ],
+    "days": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 2,
+    "expectedPassengers": 40,
+    "expectedLuggageKg": 400.0
+  },
+  {
+    "id": "R2",
+    "routeNumber": 2,
+    "departureTimes": [
+      "08:00",
+      "15:30"
+    ],
+    "days": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 2,
+    "expectedPassengers": 38,
+    "expectedLuggageKg": 380.0
+  },
+  {
+    "id": "R3",
+    "routeNumber": 3,
+    "departureTimes": [
+      "06:30",
+      "22:00"
+    ],
+    "days": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 2,
+    "expectedPassengers": 45,
+    "expectedLuggageKg": 500.0
+  },
+  {
+    "id": "R4",
+    "routeNumber": 4,
+    "departureTimes": [
+      "07:00",
+      "21:30"
+    ],
+    "days": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 2,
+    "expectedPassengers": 44,
+    "expectedLuggageKg": 480.0
+  },
+  {
+    "id": "R5",
+    "routeNumber": 5,
+    "departureTimes": [
+      "07:30"
+    ],
+    "days": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 1,
+    "expectedPassengers": 35,
+    "expectedLuggageKg": 350.0
+  },
+  {
+    "id": "R6",
+    "routeNumber": 6,
+    "departureTimes": [
+      "08:00"
+    ],
+    "days": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 1,
+    "expectedPassengers": 33,
+    "expectedLuggageKg": 330.0
+  },
+  {
+    "id": "R7",
+    "routeNumber": 7,
+    "departureTimes": [
+      "06:00",
+      "14:00"
+    ],
+    "days": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 2,
+    "expectedPassengers": 42,
+    "expectedLuggageKg": 420.0
+  },
+  {
+    "id": "R8",
+    "routeNumber": 8,
+    "departureTimes": [
+      "07:00",
+      "15:00"
+    ],
+    "days": [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 2,
+    "expectedPassengers": 41,
+    "expectedLuggageKg": 410.0
+  },
+  {
+    "id": "R1-WE",
+    "routeNumber": 1,
+    "departureTimes": [
+      "18:00"
+    ],
+    "days": [
+      "FRIDAY",
+      "SUNDAY"
+    ],
+    "flex": "PT30M",
+    "priority": 1,
+    "expectedPassengers": 30,
+    "expectedLuggageKg": 250.0
+  }
+]

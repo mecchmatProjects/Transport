@@ -3,13 +3,11 @@ package transport.model;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-/** Окреме багажне відправлення без пасажира (README §6, варіант 2). */
 public final class Shipment extends Luggage {
 
   private final Contact sender;
   private final Contact recipient;
 
-  /** Щойно зареєстроване відправлення. */
   public Shipment(
       String id,
       String tripId,
@@ -24,7 +22,6 @@ public final class Shipment extends Luggage {
         sender, recipient);
   }
 
-  /** Повний конструктор (для завантаження зі сховища). */
   public Shipment(
       String id,
       String tripId,
