@@ -50,7 +50,6 @@ class JsonStorageTest {
 
   @TempDir Path dir;
 
-  /** Заповнює всі 8 репозиторіїв і повертає квиток, змінений після продажу. */
   private static Ticket fill(JsonStorage storage) {
     List.of(KYIV, ZHYTOMYR, RIVNE).forEach(storage.cities()::add);
     storage.routes().add(ROUTE);
@@ -135,6 +134,29 @@ class JsonStorageTest {
     assertThatThrownBy(() -> JsonStorage.open(dir))
         .isInstanceOf(StorageException.class)
         .hasMessageContaining("unknown route 12");
+  }
+
+  @Test
+  void tripWithUnknownFieldFails() throws Exception {
+    fill(JsonStorage.open(dir));
+    Path trips = dir.resolve(JsonStorage.TRIPS);
+    Files.writeString(trips, Files.readString(trips).replace("\"busId\"", "\"busID\""));
+
+    assertThatThrownBy(() -> JsonStorage.open(dir))
+        .isInstanceOf(StorageException.class)
+        .hasMessageContaining("unknown field 'busID'");
+  }
+
+  @Test
+  void tripWithNonIntegerRouteFails() throws Exception {
+    fill(JsonStorage.open(dir));
+    Path trips = dir.resolve(JsonStorage.TRIPS);
+    String broken = Files.readString(trips).replace("\"routeNumber\" : 12", "\"routeNumber\" : \"abc\"");
+    Files.writeString(trips, broken);
+
+    assertThatThrownBy(() -> JsonStorage.open(dir))
+        .isInstanceOf(StorageException.class)
+        .hasMessageContaining("'routeNumber' must be an integer");
   }
 
   @Test

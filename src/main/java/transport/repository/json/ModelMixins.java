@@ -17,11 +17,7 @@ import transport.model.Shipment;
 import transport.model.TicketStatus;
 import transport.model.TimeWindow;
 
-/**
- * Jackson-анотації для класів моделі, винесені в mix-in, щоб пакет {@code model} не залежав від
- * Jackson. Record-и ({@code City}, {@code Route}, {@code ScheduleTemplate} …) Jackson читає сам,
- * mix-in потрібні лише звичайним класам з кількома конструкторами та ієрархії багажу.
- */
+/** Jackson-анотації винесені сюди, щоб {@code model} не залежав від Jackson. */
 final class ModelMixins {
 
   private ModelMixins() {}

@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-/** Сховище в пам'яті; порядок {@link #findAll()} — порядок першого додавання. */
 public class InMemoryRepository<T, ID> implements Repository<T, ID> {
 
   private final String entityName;
@@ -42,7 +41,7 @@ public class InMemoryRepository<T, ID> implements Repository<T, ID> {
 
   @Override
   public T save(T entity) {
-    data.put(idOf(entity), entity); // заміна лишає сутність на її місці в порядку
+    data.put(idOf(entity), entity);
     return entity;
   }
 

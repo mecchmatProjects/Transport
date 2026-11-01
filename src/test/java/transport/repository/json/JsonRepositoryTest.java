@@ -59,6 +59,31 @@ class JsonRepositoryTest {
   }
 
   @Test
+  void nullFileIsEmpty() throws Exception {
+    Path file = dir.resolve("cities.json");
+    Files.writeString(file, "null");
+    assertThat(open(file).count()).isEqualTo(0L);
+  }
+
+  @Test
+  void nullEntryFails() throws Exception {
+    Path file = dir.resolve("cities.json");
+    Files.writeString(file, "[null]");
+    assertThatThrownBy(() -> open(file))
+        .isInstanceOf(StorageException.class)
+        .hasMessageContaining("cities.json: null entry");
+  }
+
+  @Test
+  void emptyFileFails() throws Exception {
+    Path file = dir.resolve("cities.json");
+    Files.writeString(file, "");
+    assertThatThrownBy(() -> open(file))
+        .isInstanceOf(StorageException.class)
+        .hasMessageContaining("cities.json");
+  }
+
+  @Test
   void failedWriteLeavesMemoryUnchanged() throws Exception {
     Path file = dir.resolve("cities.json");
     JsonRepository<City, String> repo = open(file);
@@ -71,5 +96,8 @@ class JsonRepositoryTest {
     assertThatThrownBy(() -> repo.add(LVIV)).isInstanceOf(StorageException.class);
     assertThatThrownBy(() -> repo.deleteById("KYIV")).isInstanceOf(StorageException.class);
     assertThat(repo.findAll()).containsExactly(KYIV);
+    try (var files = Files.list(dir)) {
+      assertThat(files.noneMatch(f -> f.toString().endsWith(".tmp"))).isTrue();
+    }
   }
 }

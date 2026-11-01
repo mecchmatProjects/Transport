@@ -11,7 +11,6 @@ public enum TicketStatus implements Transitional<TicketStatus> {
     return this == SOLD && (next == CANCELLED || next == USED);
   }
 
-  /** Чи займає квиток місце в автобусі. */
   public boolean occupiesSeat() {
     return this == SOLD;
   }

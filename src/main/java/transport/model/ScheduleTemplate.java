@@ -14,23 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-/**
- * Шаблон розкладу: за яким маршрутом, о котрій і в які дні тижня має відбуватися рейс. Це джерело
- * початкового розкладу для {@code ScheduleService}: шаблон розгортається у конкретні {@link Trip}
- * на дату, після чого оптимізатор призначає автобуси і може зсунути відправлення в межах {@code
- * flex}.
- *
- * @param id ідентифікатор шаблону
- * @param routeNumber номер маршруту ({@link Route#number()})
- * @param departureTimes бажані часи відправлення з першої зупинки (без повторів, зберігаються
- *     відсортованими)
- * @param days дні тижня, коли шаблон діє
- * @param flex на скільки оптимізатор може зсунути відправлення в будь-який бік
- * @param priority пріоритет (більше значення важливіше); оптимізатор першими відкидає рейси з
- *     меншим пріоритетом
- * @param expectedPassengers очікувана кількість пасажирів на рейсі
- * @param expectedLuggageKg очікувана вага багажу на рейсі, кг
- */
 public record ScheduleTemplate(
     String id,
     int routeNumber,
@@ -72,7 +55,6 @@ public record ScheduleTemplate(
     Checks.requireNonNegative(expectedLuggageKg, "expectedLuggageKg");
   }
 
-  /** Шаблон на всі дні тижня. */
   public static ScheduleTemplate daily(
       String id, int routeNumber, List<LocalTime> departureTimes, Duration flex,
       int expectedPassengers) {
@@ -81,19 +63,11 @@ public record ScheduleTemplate(
         expectedPassengers, 0);
   }
 
-  /** Чи діє шаблон у цю дату. */
   public boolean runsOn(LocalDate date) {
     return days.contains(date.getDayOfWeek());
   }
 
-  /**
-   * Розгортає шаблон у рейси на дату: по одному {@link Trip} без автобуса на кожен час
-   * відправлення. Ідентифікатор рейсу детермінований: {@code <id>-<yyyyMMdd>-<HHmm>}, тож повторне
-   * розгортання дає ті самі id.
-   *
-   * @return порожній список, якщо в цей день шаблон не діє
-   * @throws IllegalArgumentException якщо {@code route} не той, на який посилається шаблон
-   */
+  /** Id рейсу детермінований: {@code <id>-<yyyyMMdd>-<HHmm>}. */
   public List<Trip> tripsOn(LocalDate date, Route route) {
     Objects.requireNonNull(date, "date");
     Objects.requireNonNull(route, "route");
@@ -111,12 +85,10 @@ public record ScheduleTemplate(
     return List.copyOf(trips);
   }
 
-  /** Ідентифікатор рейсу, який шаблон створює для цієї дати й часу. */
   public String tripId(LocalDate date, LocalTime time) {
     return id + "-" + date.format(DATE_ID) + "-" + time.format(TIME_ID);
   }
 
-  /** Чи вкладається фактичне відправлення в допустимий зсув від бажаного. */
   public boolean withinFlex(LocalDateTime planned, LocalDateTime actual) {
     return Duration.between(planned, actual).abs().compareTo(flex) <= 0;
   }

@@ -11,11 +11,10 @@ import transport.exception.StorageException;
 import transport.repository.InMemoryRepository;
 
 /**
- * {@link InMemoryRepository}, що тримає копію у JSON-файлі: читає його при створенні і
- * переписує цілком після кожного {@code save} / {@code deleteById}.
+ * Змінену сутність треба знову передати в {@code save}, інакше файл не оновиться.
  *
- * <p>Змінні сутності ({@code Trip}, {@code Ticket}, {@code Bus}) після зміни треба знову передати в
- * {@code save}, інакше зміна не потрапить у файл.
+ * <p>Відкат при збої запису гарантований лише для вставки й видалення: змінений на місці об'єкт
+ * ({@code Trip}, {@code Ticket}, {@code Bus}) лишається зміненим.
  */
 public final class JsonRepository<T, ID> extends InMemoryRepository<T, ID> {
 
@@ -48,7 +47,7 @@ public final class JsonRepository<T, ID> extends InMemoryRepository<T, ID> {
     try {
       flush();
     } catch (StorageException e) {
-      // файл не записався — повертаємо пам'ять у стан, що збігається з файлом
+      // запис не вдався — відкочуємо пам'ять до стану файлу
       previous.ifPresentOrElse(super::save, () -> super.deleteById(id));
       throw e;
     }
@@ -71,16 +70,22 @@ public final class JsonRepository<T, ID> extends InMemoryRepository<T, ID> {
     return true;
   }
 
-  /** Записує поточний вміст у файл. */
   public void flush() {
     codec.writeFile(file, findAll(), listType);
   }
 
   private void load() {
     if (!Files.exists(file)) {
-      return; // файл з'явиться при першому save
+      return;
     }
-    for (T entity : codec.readFile(file, listType)) {
+    List<T> entities = codec.readFile(file, listType);
+    if (entities == null) {
+      return; // файл із вмістом null
+    }
+    for (T entity : entities) {
+      if (entity == null) {
+        throw new StorageException(file + ": null entry", null);
+      }
       ID id = idOf(entity);
       if (existsById(id)) {
         throw new StorageException(file + ": duplicate " + entityName() + " id " + id, null);

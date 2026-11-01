@@ -11,17 +11,12 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Map;
+import java.util.Set;
 import transport.model.Route;
 import transport.model.Trip;
 import transport.model.TripStatus;
 
-/**
- * {@link Trip} у JSON посилається на маршрут за номером:
- *
- * <pre>{"id":"T1","routeNumber":12,"date":"2026-09-23","departureTime":"08:00:00","busId":"AA1234","status":"SCHEDULED"}</pre>
- *
- * Маршрут при читанні береться з каталогу ({@link JsonCodec#withRoutes}).
- */
+/** У JSON маршрут записується за номером і при читанні береться з каталогу маршрутів. */
 final class TripJson {
 
   private TripJson() {}
@@ -51,6 +46,8 @@ final class TripJson {
 
   static final class Deserializer extends StdDeserializer<Trip> {
     private static final long serialVersionUID = 1L;
+    private static final Set<String> FIELDS =
+        Set.of("id", "routeNumber", "date", "departureTime", "busId", "status");
 
     Deserializer() {
       super(Trip.class);
@@ -59,27 +56,23 @@ final class TripJson {
     @Override
     public Trip deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
       JsonNode node = ctxt.readTree(parser);
-      String id = required(ctxt, node, "id").asText();
-      Route route = route(ctxt, required(ctxt, node, "routeNumber").asInt());
-      LocalDate date = ctxt.readTreeAsValue(required(ctxt, node, "date"), LocalDate.class);
-      LocalTime time = ctxt.readTreeAsValue(required(ctxt, node, "departureTime"), LocalTime.class);
-      JsonNode bus = node.get("busId");
-      TripStatus status = ctxt.readTreeAsValue(required(ctxt, node, "status"), TripStatus.class);
+      JsonFields.checkKnown(ctxt, node, Trip.class, FIELDS);
+      String id = JsonFields.requiredText(ctxt, node, Trip.class, "id");
+      Route route = route(ctxt, JsonFields.requiredInt(ctxt, node, Trip.class, "routeNumber"));
+      LocalDate date = ctxt.readTreeAsValue(
+          JsonFields.required(ctxt, node, Trip.class, "date"), LocalDate.class);
+      LocalTime time = ctxt.readTreeAsValue(
+          JsonFields.required(ctxt, node, Trip.class, "departureTime"), LocalTime.class);
+      TripStatus status = ctxt.readTreeAsValue(
+          JsonFields.required(ctxt, node, Trip.class, "status"), TripStatus.class);
+      String busId = node.hasNonNull("busId")
+          ? JsonFields.requiredText(ctxt, node, Trip.class, "busId")
+          : null;
       try {
-        return new Trip(id, route, date, time, bus == null || bus.isNull() ? null : bus.asText(),
-            status);
+        return new Trip(id, route, date, time, busId, status);
       } catch (IllegalArgumentException e) {
         return ctxt.reportInputMismatch(this, "invalid trip %s: %s", id, e.getMessage());
       }
-    }
-
-    private static JsonNode required(DeserializationContext ctxt, JsonNode node, String field)
-        throws IOException {
-      JsonNode value = node.get(field);
-      if (value == null || value.isNull()) {
-        return ctxt.reportInputMismatch(Trip.class, "trip: missing '%s'", field);
-      }
-      return value;
     }
 
     private static Route route(DeserializationContext ctxt, int number) throws IOException {

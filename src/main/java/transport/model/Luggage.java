@@ -3,10 +3,6 @@ package transport.model;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-/**
- * Багаж на рейсі (README §6). Два варіанти — {@link PassengerLuggage} (прив'язаний до квитка) та
- * {@link Shipment} (окреме відправлення без пасажира). Спільні дані й життєвий цикл — тут.
- */
 public abstract sealed class Luggage permits PassengerLuggage, Shipment {
 
   private final String id;
@@ -38,7 +34,6 @@ public abstract sealed class Luggage permits PassengerLuggage, Shipment {
     this.status = Objects.requireNonNull(status, "status");
   }
 
-  /** Короткий опис для звітів і CLI. */
   public abstract String description();
 
   public String getId() {
@@ -73,12 +68,10 @@ public abstract sealed class Luggage permits PassengerLuggage, Shipment {
     return status;
   }
 
-  /** Чи враховується вага в завантаженні автобуса. */
   public boolean occupiesCapacity() {
     return status.occupiesCapacity();
   }
 
-  /** Перехід за правилами {@link LuggageStatus}. */
   public void changeStatus(LuggageStatus next) {
     status = Transitional.transition(status, next);
   }

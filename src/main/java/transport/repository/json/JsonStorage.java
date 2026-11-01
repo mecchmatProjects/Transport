@@ -16,14 +16,7 @@ import transport.model.Trip;
 import transport.repository.Repository;
 import transport.repository.TariffKey;
 
-/**
- * Усі репозиторії над однією текою даних, по файлу на тип: {@code cities.json}, {@code
- * routes.json}, … Відсутній файл означає порожнє сховище.
- *
- * <p>Порядок завантаження важливий: міста → маршрути (посилаються на міста) → рейси (посилаються
- * на маршрути). Каталоги для посилань фіксуються при відкритті, тому дані, змінені в іншому
- * процесі, побачить лише новий {@code open}.
- */
+/** Порядок завантаження: міста → маршрути → рейси (кожен рівень посилається на попередній). */
 public final class JsonStorage {
 
   public static final String CITIES = "cities.json";
@@ -66,12 +59,6 @@ public final class JsonStorage {
         Luggage::getId);
   }
 
-  /**
-   * Відкриває сховище в теці {@code dataDir} і завантажує всі наявні файли.
-   *
-   * @throws transport.exception.StorageException якщо файл битий або посилається на неіснуюче
-   *     місто чи маршрут
-   */
   public static JsonStorage open(Path dataDir) {
     return new JsonStorage(dataDir);
   }
@@ -112,7 +99,6 @@ public final class JsonStorage {
     return luggage;
   }
 
-  /** Переписує всі файли — напр. після змін змінних сутностей без {@code save}. */
   public void flushAll() {
     List.of(cities, buses, routes, tariffs, scheduleTemplates, trips, tickets, luggage)
         .forEach(JsonRepository::flush);

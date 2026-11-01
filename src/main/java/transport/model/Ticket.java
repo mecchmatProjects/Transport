@@ -4,10 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/**
- * Пасажирський квиток між будь-якими двома зупинками рейсу (README §4). Відповідність зупинок
- * маршруту та вільні місця перевіряє {@code TicketService}.
- */
 public class Ticket {
 
   private final String number;
@@ -20,7 +16,6 @@ public class Ticket {
   private final LocalDateTime soldAt;
   private TicketStatus status;
 
-  /** Щойно проданий квиток ({@link TicketStatus#SOLD}). */
   public Ticket(
       String number,
       String tripId,
@@ -33,7 +28,6 @@ public class Ticket {
     this(number, tripId, passenger, fromCityId, toCityId, seatNumber, price, soldAt, TicketStatus.SOLD);
   }
 
-  /** Повний конструктор (для завантаження зі сховища). */
   public Ticket(
       String number,
       String tripId,
@@ -92,7 +86,6 @@ public class Ticket {
     return status;
   }
 
-  /** Чи займає квиток місце (не скасований і не використаний). */
   public boolean isActive() {
     return status.occupiesSeat();
   }
@@ -105,10 +98,7 @@ public class Ticket {
     status = Transitional.transition(status, TicketStatus.USED);
   }
 
-  /**
-   * Чи займає квиток ділянку маршруту {@code segmentIndex}, якщо поїздка займає зупинки {@code
-   * [fromIndex; toIndex)}. Індекси бере сервіс з {@link Route#stopRange}.
-   */
+  /** Чи займає поїздка {@code [fromIndex; toIndex)} ділянку {@code segmentIndex}. */
   public static boolean coversSegment(int fromIndex, int toIndex, int segmentIndex) {
     return segmentIndex >= fromIndex && segmentIndex < toIndex;
   }

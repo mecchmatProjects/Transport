@@ -1,0 +1,583 @@
+[
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "ZHYTOMYR",
+    "routeNumber": null,
+    "fare": 250,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "RIVNE",
+    "routeNumber": null,
+    "fare": 450,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "LUTSK",
+    "routeNumber": null,
+    "fare": 550,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZHYTOMYR",
+    "toCityId": "RIVNE",
+    "routeNumber": null,
+    "fare": 290,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZHYTOMYR",
+    "toCityId": "LUTSK",
+    "routeNumber": null,
+    "fare": 380,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "RIVNE",
+    "toCityId": "LUTSK",
+    "routeNumber": null,
+    "fare": 180,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "LUTSK",
+    "toCityId": "RIVNE",
+    "routeNumber": null,
+    "fare": 180,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "LUTSK",
+    "toCityId": "ZHYTOMYR",
+    "routeNumber": null,
+    "fare": 380,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "LUTSK",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 550,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "RIVNE",
+    "toCityId": "ZHYTOMYR",
+    "routeNumber": null,
+    "fare": 290,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "RIVNE",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 450,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZHYTOMYR",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 250,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "BILA_TSERKVA",
+    "routeNumber": null,
+    "fare": 170,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "UMAN",
+    "routeNumber": null,
+    "fare": 320,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "ODESA",
+    "routeNumber": null,
+    "fare": 640,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "BILA_TSERKVA",
+    "toCityId": "UMAN",
+    "routeNumber": null,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "BILA_TSERKVA",
+    "toCityId": "ODESA",
+    "routeNumber": null,
+    "fare": 540,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "UMAN",
+    "toCityId": "ODESA",
+    "routeNumber": null,
+    "fare": 390,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ODESA",
+    "toCityId": "UMAN",
+    "routeNumber": null,
+    "fare": 390,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ODESA",
+    "toCityId": "BILA_TSERKVA",
+    "routeNumber": null,
+    "fare": 540,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ODESA",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 640,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "UMAN",
+    "toCityId": "BILA_TSERKVA",
+    "routeNumber": null,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "UMAN",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 320,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "BILA_TSERKVA",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 170,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "CHERKASY",
+    "routeNumber": null,
+    "fare": 290,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "KREMENCHUK",
+    "routeNumber": null,
+    "fare": 450,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "KAMIANSKE",
+    "routeNumber": null,
+    "fare": 590,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "DNIPRO",
+    "routeNumber": null,
+    "fare": 640,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "ZAPORIZHZHIA",
+    "routeNumber": null,
+    "fare": 740,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "CHERKASY",
+    "toCityId": "KREMENCHUK",
+    "routeNumber": null,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "CHERKASY",
+    "toCityId": "KAMIANSKE",
+    "routeNumber": null,
+    "fare": 360,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "CHERKASY",
+    "toCityId": "DNIPRO",
+    "routeNumber": null,
+    "fare": 410,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "CHERKASY",
+    "toCityId": "ZAPORIZHZHIA",
+    "routeNumber": null,
+    "fare": 510,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KREMENCHUK",
+    "toCityId": "KAMIANSKE",
+    "routeNumber": null,
+    "fare": 210,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KREMENCHUK",
+    "toCityId": "DNIPRO",
+    "routeNumber": null,
+    "fare": 250,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KREMENCHUK",
+    "toCityId": "ZAPORIZHZHIA",
+    "routeNumber": null,
+    "fare": 350,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KAMIANSKE",
+    "toCityId": "DNIPRO",
+    "routeNumber": null,
+    "fare": 110,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KAMIANSKE",
+    "toCityId": "ZAPORIZHZHIA",
+    "routeNumber": null,
+    "fare": 210,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "DNIPRO",
+    "toCityId": "ZAPORIZHZHIA",
+    "routeNumber": null,
+    "fare": 170,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZAPORIZHZHIA",
+    "toCityId": "DNIPRO",
+    "routeNumber": null,
+    "fare": 170,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZAPORIZHZHIA",
+    "toCityId": "KAMIANSKE",
+    "routeNumber": null,
+    "fare": 210,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZAPORIZHZHIA",
+    "toCityId": "KREMENCHUK",
+    "routeNumber": null,
+    "fare": 350,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZAPORIZHZHIA",
+    "toCityId": "CHERKASY",
+    "routeNumber": null,
+    "fare": 510,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZAPORIZHZHIA",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 740,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "DNIPRO",
+    "toCityId": "KAMIANSKE",
+    "routeNumber": null,
+    "fare": 110,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "DNIPRO",
+    "toCityId": "KREMENCHUK",
+    "routeNumber": null,
+    "fare": 250,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "DNIPRO",
+    "toCityId": "CHERKASY",
+    "routeNumber": null,
+    "fare": 410,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "DNIPRO",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 640,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KAMIANSKE",
+    "toCityId": "KREMENCHUK",
+    "routeNumber": null,
+    "fare": 210,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KAMIANSKE",
+    "toCityId": "CHERKASY",
+    "routeNumber": null,
+    "fare": 360,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KAMIANSKE",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 590,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KREMENCHUK",
+    "toCityId": "CHERKASY",
+    "routeNumber": null,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KREMENCHUK",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 450,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "CHERKASY",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 290,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "VINNYTSIA",
+    "routeNumber": null,
+    "fare": 380,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "KHMELNYTSKYI",
+    "routeNumber": null,
+    "fare": 530,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "TERNOPIL",
+    "routeNumber": null,
+    "fare": 660,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "LVIV",
+    "routeNumber": null,
+    "fare": 820,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZHYTOMYR",
+    "toCityId": "VINNYTSIA",
+    "routeNumber": null,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZHYTOMYR",
+    "toCityId": "KHMELNYTSKYI",
+    "routeNumber": null,
+    "fare": 360,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZHYTOMYR",
+    "toCityId": "TERNOPIL",
+    "routeNumber": null,
+    "fare": 500,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "ZHYTOMYR",
+    "toCityId": "LVIV",
+    "routeNumber": null,
+    "fare": 650,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "VINNYTSIA",
+    "toCityId": "KHMELNYTSKYI",
+    "routeNumber": null,
+    "fare": 210,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "VINNYTSIA",
+    "toCityId": "TERNOPIL",
+    "routeNumber": null,
+    "fare": 350,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "VINNYTSIA",
+    "toCityId": "LVIV",
+    "routeNumber": null,
+    "fare": 500,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KHMELNYTSKYI",
+    "toCityId": "TERNOPIL",
+    "routeNumber": null,
+    "fare": 200,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KHMELNYTSKYI",
+    "toCityId": "LVIV",
+    "routeNumber": null,
+    "fare": 360,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "TERNOPIL",
+    "toCityId": "LVIV",
+    "routeNumber": null,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "LVIV",
+    "toCityId": "TERNOPIL",
+    "routeNumber": null,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "LVIV",
+    "toCityId": "KHMELNYTSKYI",
+    "routeNumber": null,
+    "fare": 360,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "LVIV",
+    "toCityId": "VINNYTSIA",
+    "routeNumber": null,
+    "fare": 500,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "LVIV",
+    "toCityId": "ZHYTOMYR",
+    "routeNumber": null,
+    "fare": 650,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "LVIV",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 820,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "TERNOPIL",
+    "toCityId": "KHMELNYTSKYI",
+    "routeNumber": null,
+    "fare": 200,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "TERNOPIL",
+    "toCityId": "VINNYTSIA",
+    "routeNumber": null,
+    "fare": 350,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "TERNOPIL",
+    "toCityId": "ZHYTOMYR",
+    "routeNumber": null,
+    "fare": 500,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "TERNOPIL",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 660,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KHMELNYTSKYI",
+    "toCityId": "VINNYTSIA",
+    "routeNumber": null,
+    "fare": 210,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KHMELNYTSKYI",
+    "toCityId": "ZHYTOMYR",
+    "routeNumber": null,
+    "fare": 360,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KHMELNYTSKYI",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 530,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "VINNYTSIA",
+    "toCityId": "ZHYTOMYR",
+    "routeNumber": null,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "VINNYTSIA",
+    "toCityId": "KYIV",
+    "routeNumber": null,
+    "fare": 380,
+    "luggageRatePerKg": 2
+  },
+  {
+    "fromCityId": "KYIV",
+    "toCityId": "ZHYTOMYR",
+    "routeNumber": 1,
+    "fare": 220,
+    "luggageRatePerKg": 2
+  }
+]

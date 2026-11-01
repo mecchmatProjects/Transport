@@ -10,18 +10,11 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Set;
 import transport.model.City;
 import transport.model.RouteSegment;
 
-/**
- * {@link RouteSegment} у JSON зберігає не повні {@link City}, а лише їхні id:
- *
- * <pre>{"from":"KYIV","to":"ZHYTOMYR","distanceKm":140.0,"travelTime":"PT2H","dwellAtEnd":"PT10M"}</pre>
- *
- * Під час читання id замінюються на об'єкти з каталогу міст (атрибут {@link
- * JsonCodec#CITIES_ATTRIBUTE}). Так місто описане один раз у {@code cities.json}, і зміна його
- * координат не вимагає правити всі маршрути.
- */
+/** У JSON міста записуються за id і при читанні беруться з каталогу міст. */
 final class RouteSegmentJson {
 
   private RouteSegmentJson() {}
@@ -50,6 +43,8 @@ final class RouteSegmentJson {
 
   static final class Deserializer extends StdDeserializer<RouteSegment> {
     private static final long serialVersionUID = 1L;
+    private static final Set<String> FIELDS =
+        Set.of("from", "to", "distanceKm", "travelTime", "dwellAtEnd");
 
     Deserializer() {
       super(RouteSegment.class);
@@ -59,10 +54,12 @@ final class RouteSegmentJson {
     public RouteSegment deserialize(JsonParser parser, DeserializationContext ctxt)
         throws IOException {
       JsonNode node = ctxt.readTree(parser);
-      City from = city(ctxt, required(ctxt, node, "from").asText());
-      City to = city(ctxt, required(ctxt, node, "to").asText());
-      double km = required(ctxt, node, "distanceKm").asDouble();
-      Duration travel = ctxt.readTreeAsValue(required(ctxt, node, "travelTime"), Duration.class);
+      JsonFields.checkKnown(ctxt, node, RouteSegment.class, FIELDS);
+      City from = city(ctxt, JsonFields.requiredText(ctxt, node, RouteSegment.class, "from"));
+      City to = city(ctxt, JsonFields.requiredText(ctxt, node, RouteSegment.class, "to"));
+      double km = JsonFields.requiredNumber(ctxt, node, RouteSegment.class, "distanceKm");
+      Duration travel = ctxt.readTreeAsValue(
+          JsonFields.required(ctxt, node, RouteSegment.class, "travelTime"), Duration.class);
       JsonNode dwellNode = node.get("dwellAtEnd");
       Duration dwell =
           dwellNode == null || dwellNode.isNull()
@@ -73,15 +70,6 @@ final class RouteSegmentJson {
       } catch (IllegalArgumentException e) {
         return ctxt.reportInputMismatch(this, "invalid route segment: %s", e.getMessage());
       }
-    }
-
-    private static JsonNode required(DeserializationContext ctxt, JsonNode node, String field)
-        throws IOException {
-      JsonNode value = node.get(field);
-      if (value == null || value.isNull()) {
-        return ctxt.reportInputMismatch(RouteSegment.class, "route segment: missing '%s'", field);
-      }
-      return value;
     }
 
     private static City city(DeserializationContext ctxt, String id) throws IOException {

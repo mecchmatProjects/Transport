@@ -1,6 +1,5 @@
 package transport.exception;
 
-/** Базовий виняток предметної області. Усі бізнес-помилки системи успадковуються від нього. */
 public class TransportException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
