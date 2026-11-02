@@ -7,5 +7,7 @@ public enum ConflictType {
   WRONG_LOCATION,
   WORKING_HOURS,
   BUS_UNAVAILABLE,
-  CAPACITY
+  CAPACITY,
+  /** Відправлення поза межами ±flex від бажаного часу. */
+  TIME_WINDOW
 }
