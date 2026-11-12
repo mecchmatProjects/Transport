@@ -1,0 +1,9 @@
+{
+  "tariff": {
+    "baseFare": 50,
+    "farePerKm": 1.2,
+    "luggagePerKgPerKm": 0.01,
+    "priceScale": 0
+  },
+  "maxRoutes": 30
+}
