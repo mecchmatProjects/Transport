@@ -71,6 +71,25 @@ class RouteServiceTest {
   }
 
   @Test
+  void updateMustKeepOwnTariffsValid() {
+    f.tariffs.add(new Tariff("RIVNE", "LUTSK", 12, new BigDecimal("180"), BigDecimal.ONE));
+    Route shortened = Route.withUniformDwell(12, "Kyiv - Rivne",
+        List.of(new RouteSegment(ServiceFixture.KYIV, ServiceFixture.ZHYTOMYR, 140,
+                Duration.ofMinutes(120)),
+            new RouteSegment(ServiceFixture.ZHYTOMYR, ServiceFixture.RIVNE, 190,
+                Duration.ofMinutes(150))),
+        Duration.ofMinutes(10));
+
+    assertThatThrownBy(() -> service.update(shortened))
+        .isInstanceOf(ValidationException.class)
+        .hasMessageContaining("RIVNE -> LUTSK");
+
+    Route renamed = new Route(12, "Renamed", f.route12.segments());
+    service.update(renamed);
+    assertThat(service.get(12).name()).isEqualTo("Renamed");
+  }
+
+  @Test
   void cannotDeleteRouteWithTemplateOrOwnTariff() {
     f.templates.add(ScheduleTemplate.daily(
         "R12-AM", 12, List.of(LocalTime.of(8, 0)), Duration.ofMinutes(30), 40));

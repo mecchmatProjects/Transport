@@ -38,6 +38,18 @@ public class TripService extends AbstractCrudService<Trip, String> {
     this.luggage = Objects.requireNonNull(luggage, "luggage");
   }
 
+  /** Повертає копію рейсу; змінювати рейс треба через команди сервісу або {@code update}. */
+  @Override
+  public Trip get(String id) {
+    return copyOf(repository.getById(id));
+  }
+
+  /** Копії всіх рейсів у порядку додавання. */
+  @Override
+  public List<Trip> list() {
+    return repository.findAll().stream().map(TripService::copyOf).toList();
+  }
+
   /** Призначає автобус; кидає {@code ScheduleConflictException} при перетині з його рейсами. */
   public Trip assignBus(String tripId, String busId) {
     Trip trip = get(tripId);
@@ -99,21 +111,29 @@ public class TripService extends AbstractCrudService<Trip, String> {
     }
   }
 
+  // Статус, маршрут і автобус змінюються лише командами; update переносить тільки час
   @Override
   protected void beforeUpdate(Trip existing, Trip updated) {
-    if (updated.hasBus() && BusService.isActive(updated)) {
-      checkBusFits(updated, updated.getBusId());
+    String id = existing.getId();
+    requireSame(id, "status", existing.getStatus(), updated.getStatus(), "cancel");
+    requireSame(id, "route", existing.getRoute().number(), updated.getRoute().number(), "create");
+    requireSame(id, "bus", existing.getBusId(), updated.getBusId(), "assignBus/unassignBus");
+    if (!existing.timeWindow().equals(updated.timeWindow())) {
+      requireScheduled(existing);
+      if (updated.hasBus()) {
+        checkBusFits(updated, updated.getBusId());
+      }
     }
   }
 
   @Override
   protected void beforeDelete(Trip trip) {
     String id = trip.getId();
-    if (!tickets.findAll(t -> t.getTripId().equals(id) && t.isActive()).isEmpty()) {
-      throw new ValidationException("trip " + id + " has active tickets");
+    if (!tickets.findAll(t -> t.getTripId().equals(id)).isEmpty()) {
+      throw new ValidationException("trip " + id + " has tickets");
     }
-    if (!luggage.findAll(l -> l.getTripId().equals(id) && l.occupiesCapacity()).isEmpty()) {
-      throw new ValidationException("trip " + id + " has luggage on board");
+    if (!luggage.findAll(l -> l.getTripId().equals(id)).isEmpty()) {
+      throw new ValidationException("trip " + id + " has luggage");
     }
   }
 
@@ -141,7 +161,21 @@ public class TripService extends AbstractCrudService<Trip, String> {
     }
   }
 
+  private static void requireSame(
+      String id, String field, Object before, Object after, String command) {
+    if (!Objects.equals(before, after)) {
+      throw new ValidationException("trip " + id + ": " + field + " cannot be changed by update,"
+          + " use " + command);
+    }
+  }
+
+  // Збережений екземпляр не віддаємо назовні: збій запису чи невдала перевірка його не зачепить
+  private static Trip copyOf(Trip trip) {
+    return new Trip(trip.getId(), trip.getRoute(), trip.getDate(), trip.getDepartureTime(),
+        trip.getBusId(), trip.getStatus());
+  }
+
   private static List<Trip> sorted(List<Trip> trips) {
-    return trips.stream().sorted(BY_DEPARTURE).toList();
+    return trips.stream().sorted(BY_DEPARTURE).map(TripService::copyOf).toList();
   }
 }

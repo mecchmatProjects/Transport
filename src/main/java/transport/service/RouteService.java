@@ -79,6 +79,14 @@ public class RouteService extends AbstractCrudService<Route, Integer> {
   @Override
   protected void beforeUpdate(Route existing, Route updated) {
     requireNoTrips(existing, "change");
+    int number = existing.number();
+    tariffs.findAll(t -> t.routeNumber() != null && t.routeNumber() == number).stream()
+        .filter(t -> !updated.servesDirection(t.fromCityId(), t.toCityId()))
+        .findFirst()
+        .ifPresent(t -> {
+          throw new ValidationException("cannot change route " + number + ": tariff "
+              + t.fromCityId() + " -> " + t.toCityId() + " would no longer apply");
+        });
   }
 
   @Override

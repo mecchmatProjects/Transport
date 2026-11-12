@@ -37,15 +37,17 @@ class BusServiceTest {
   }
 
   @Test
-  void cancelledTripDoesNotBlockDelete() {
+  void finishedTripsAlsoBlockDelete() {
     Trip trip = f.trip("T1", LocalTime.of(8, 0));
     trip.assignBus("AA1234");
     f.trips.add(trip);
     f.tripService.cancel("T1");
 
-    service.delete("AA1234");
+    assertThatThrownBy(() -> service.delete("AA1234")).hasMessageContaining("T1");
 
-    assertThat(service.list()).isEmpty();
+    service.create(new Bus("BB0001", "MAN", 50, 1200, "KYIV"));
+    service.delete("BB0001");
+    assertThat(service.list()).extracting(Bus::getId).containsExactly("AA1234");
   }
 
   @Test

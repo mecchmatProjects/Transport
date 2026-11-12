@@ -91,15 +91,74 @@ class TripServiceTest {
   }
 
   @Test
-  void cannotDeleteTripWithActiveTicket() {
+  void cannotDeleteTripWithAnyTicket() {
     service.create(f.trip("T1", LocalTime.of(8, 0)));
     f.tickets.add(f.ticket("TK1", "T1"));
+    f.tickets.getById("TK1").markUsed();
 
     assertThatThrownBy(() -> service.delete("T1")).hasMessageContaining("tickets");
 
-    f.tickets.getById("TK1").cancel();
+    f.tickets.deleteById("TK1");
     service.delete("T1");
     assertThat(service.list()).isEmpty();
+  }
+
+  @Test
+  void updateCannotChangeStatusRouteOrBus() {
+    f.routes.add(ServiceFixture.kyivLutsk(13));
+    service.create(f.trip("T1", LocalTime.of(8, 0)));
+    service.cancel("T1");
+
+    Trip revived = new Trip("T1", f.route12, DATE, LocalTime.of(8, 0), null, TripStatus.SCHEDULED);
+    assertThatThrownBy(() -> service.update(revived)).hasMessageContaining("status");
+
+    service.create(f.trip("T2", LocalTime.of(8, 0)));
+    Trip completed =
+        new Trip("T2", f.route12, DATE, LocalTime.of(8, 0), null, TripStatus.COMPLETED);
+    assertThatThrownBy(() -> service.update(completed)).hasMessageContaining("status");
+
+    Trip otherRoute = new Trip("T2", f.routes.getById(13), DATE, LocalTime.of(8, 0));
+    assertThatThrownBy(() -> service.update(otherRoute)).hasMessageContaining("route");
+
+    Trip withBus = f.trip("T2", LocalTime.of(8, 0));
+    withBus.assignBus("AA1234");
+    assertThatThrownBy(() -> service.update(withBus)).hasMessageContaining("assignBus");
+
+    assertThat(service.get("T1").getStatus()).isEqualTo(TripStatus.CANCELLED);
+    assertThat(service.get("T2").getStatus()).isEqualTo(TripStatus.SCHEDULED);
+  }
+
+  // Мутація отриманого рейсу не потрапляє в репозиторій, навіть якщо update впав
+  @Test
+  void failedUpdateLeavesStoredTripUnchanged() {
+    service.create(f.trip("T1", LocalTime.of(8, 0)));
+    service.create(f.trip("T2", LocalTime.of(9, 0)));
+    service.assignBus("T1", "AA1234");
+
+    Trip t2 = service.get("T2");
+    t2.assignBus("AA1234");
+    assertThatThrownBy(() -> service.update(t2)).isInstanceOf(ValidationException.class);
+
+    assertThat(service.get("T2").getBusId()).isNull();
+  }
+
+  @Test
+  void updateReschedulesAndRechecksBus() {
+    service.create(f.trip("T1", LocalTime.of(8, 0)));
+    service.create(f.trip("T2", LocalTime.of(15, 0)));
+    service.assignBus("T1", "AA1234");
+    service.assignBus("T2", "AA1234");
+
+    Trip earlier = service.get("T2");
+    earlier.reschedule(LocalTime.of(12, 0));
+    assertThatThrownBy(() -> service.update(earlier))
+        .isInstanceOf(ScheduleConflictException.class);
+    assertThat(service.get("T2").getDepartureTime()).isEqualTo(LocalTime.of(15, 0));
+
+    Trip later = service.get("T2");
+    later.reschedule(LocalTime.of(16, 0));
+    service.update(later);
+    assertThat(service.get("T2").getDepartureTime()).isEqualTo(LocalTime.of(16, 0));
   }
 
   @Test

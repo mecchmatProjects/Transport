@@ -48,10 +48,12 @@ public class BusService extends AbstractCrudService<Bus, String> {
     }
   }
 
+  // Завершені й скасовані рейси теж тримають busId, на них спираються звіти
   @Override
   protected void beforeDelete(Bus bus) {
-    activeTripsOf(bus.getId()).stream().findFirst().ifPresent(trip -> {
-      throw new ValidationException("bus " + bus.getId() + " is assigned to trip " + trip.getId());
+    String id = bus.getId();
+    trips.findAll(trip -> id.equals(trip.getBusId())).stream().findFirst().ifPresent(trip -> {
+      throw new ValidationException("bus " + id + " is referenced by trip " + trip.getId());
     });
   }
 
