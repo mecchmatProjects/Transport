@@ -21,14 +21,18 @@ public class TableTariffPolicy implements TariffPolicy {
 
   @Override
   public Optional<BigDecimal> ticketPrice(Route route, String fromCityId, String toCityId) {
-    return find(route, fromCityId, toCityId).map(Tariff::fare);
+    return find(route, fromCityId, toCityId).map(tariff -> round(tariff.fare()));
   }
 
   @Override
   public Optional<BigDecimal> luggagePrice(
       Route route, String fromCityId, String toCityId, double kg) {
-    return find(route, fromCityId, toCityId)
-        .map(tariff -> tariff.luggagePrice(kg).setScale(priceScale, RoundingMode.HALF_UP));
+    TariffPolicy.checkWeight(kg);
+    return find(route, fromCityId, toCityId).map(tariff -> round(tariff.luggagePrice(kg)));
+  }
+
+  private BigDecimal round(BigDecimal price) {
+    return price.setScale(priceScale, RoundingMode.HALF_UP);
   }
 
   private Optional<Tariff> find(Route route, String fromCityId, String toCityId) {

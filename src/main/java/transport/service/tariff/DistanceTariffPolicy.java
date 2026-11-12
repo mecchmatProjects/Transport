@@ -25,9 +25,7 @@ public class DistanceTariffPolicy implements TariffPolicy {
   @Override
   public Optional<BigDecimal> luggagePrice(
       Route route, String fromCityId, String toCityId, double kg) {
-    if (!(kg > 0)) {
-      throw new IllegalArgumentException("kg must be > 0, got " + kg);
-    }
+    TariffPolicy.checkWeight(kg);
     BigDecimal km = km(route, fromCityId, toCityId);
     return Optional.of(round(config.luggagePerKgPerKm().multiply(BigDecimal.valueOf(kg))
         .multiply(km)));

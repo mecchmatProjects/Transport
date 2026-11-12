@@ -40,7 +40,10 @@ class DistanceTariffPolicyTest {
   void rejectsBadInput() {
     assertThatThrownBy(() -> policy.ticketPrice(route, "LUTSK", "KYIV"))
         .isInstanceOf(ValidationException.class);
-    assertThatThrownBy(() -> policy.luggagePrice(route, "KYIV", "LUTSK", 0))
-        .isInstanceOf(IllegalArgumentException.class);
+    for (double kg : new double[] {0, -1, Double.NaN, Double.POSITIVE_INFINITY}) {
+      assertThatThrownBy(() -> policy.luggagePrice(route, "KYIV", "LUTSK", kg))
+          .isInstanceOf(ValidationException.class)
+          .hasMessageContaining("weight");
+    }
   }
 }

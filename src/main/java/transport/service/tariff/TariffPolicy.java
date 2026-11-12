@@ -34,6 +34,12 @@ public interface TariffPolicy {
     }
   }
 
+  static void checkWeight(double kg) {
+    if (!Double.isFinite(kg) || kg <= 0) {
+      throw new ValidationException("luggage weight must be a positive number, got " + kg);
+    }
+  }
+
   private static ValidationException noPrice(Route route, String from, String to) {
     return new ValidationException(
         "no tariff for route " + route.number() + ": " + from + " -> " + to);
