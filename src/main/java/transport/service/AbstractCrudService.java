@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import transport.repository.Repository;
 
-/** Спільний CRUD; підкласи задають валідацію і перевірки цілісності через хуки. */
+/** Спільний CRUD; назовні віддаються лише копії збережених сутностей. */
+
 public abstract class AbstractCrudService<T, ID> {
 
   protected final Repository<T, ID> repository;
@@ -17,7 +18,8 @@ public abstract class AbstractCrudService<T, ID> {
   public T create(T entity) {
     validate(entity);
     beforeCreate(entity);
-    return repository.add(entity);
+    repository.add(copy(entity));
+    return copy(entity);
   }
 
   /** Замінює наявну сутність з тим самим id. */
@@ -25,17 +27,17 @@ public abstract class AbstractCrudService<T, ID> {
     T existing = repository.getById(repository.idOf(entity));
     validate(entity);
     beforeUpdate(existing, entity);
-    return repository.save(entity);
+    return store(entity);
   }
 
-  /** Повертає сутність або кидає {@code EntityNotFoundException}. */
+  /** Повертає копію сутності або кидає {@code EntityNotFoundException}. */
   public T get(ID id) {
-    return repository.getById(id);
+    return copy(repository.getById(id));
   }
 
-  /** Усі сутності в порядку додавання. */
+  /** Копії всіх сутностей у порядку додавання. */
   public List<T> list() {
-    return repository.findAll();
+    return repository.findAll().stream().map(this::copy).toList();
   }
 
   /** Кількість сутностей. */
@@ -50,10 +52,23 @@ public abstract class AbstractCrudService<T, ID> {
     repository.deleteById(id);
   }
 
+  /** Зберігає копію сутності й повертає ще одну копію для виклику. */
+  protected final T store(T entity) {
+    repository.save(copy(entity));
+    return copy(entity);
+  }
+
+  /** Копія сутності; для незмінних records та сама. */
+
+  protected T copy(T entity) {
+    return entity;
+  }
+
   protected abstract void validate(T entity);
 
   protected void beforeCreate(T entity) {}
 
+  /** {@code existing} це збережений екземпляр: хук його лише читає. */
   protected void beforeUpdate(T existing, T updated) {}
 
   protected void beforeDelete(T entity) {}

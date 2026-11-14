@@ -38,25 +38,13 @@ public class TripService extends AbstractCrudService<Trip, String> {
     this.luggage = Objects.requireNonNull(luggage, "luggage");
   }
 
-  /** Повертає копію рейсу; змінювати рейс треба через команди сервісу або {@code update}. */
-  @Override
-  public Trip get(String id) {
-    return copyOf(repository.getById(id));
-  }
-
-  /** Копії всіх рейсів у порядку додавання. */
-  @Override
-  public List<Trip> list() {
-    return repository.findAll().stream().map(TripService::copyOf).toList();
-  }
-
   /** Призначає автобус; кидає {@code ScheduleConflictException} при перетині з його рейсами. */
   public Trip assignBus(String tripId, String busId) {
     Trip trip = get(tripId);
     requireScheduled(trip);
     checkBusFits(trip, busId);
     trip.assignBus(busId);
-    return repository.save(trip);
+    return store(trip);
   }
 
   /** Знімає автобус із запланованого рейсу. */
@@ -64,14 +52,14 @@ public class TripService extends AbstractCrudService<Trip, String> {
     Trip trip = get(tripId);
     requireScheduled(trip);
     trip.unassignBus();
-    return repository.save(trip);
+    return store(trip);
   }
 
   /** Скасовує рейс; квитки й багаж скасовують K3/K4. */
   public Trip cancel(String tripId) {
     Trip trip = get(tripId);
     trip.changeStatus(TripStatus.CANCELLED);
-    return repository.save(trip);
+    return store(trip);
   }
 
   /** Рейси за датою відправлення, впорядковані за часом. */
@@ -169,8 +157,12 @@ public class TripService extends AbstractCrudService<Trip, String> {
     }
   }
 
-  // Збережений екземпляр не віддаємо назовні: збій запису чи невдала перевірка його не зачепить
-  private static Trip copyOf(Trip trip) {
+  @Override
+  protected Trip copy(Trip trip) {
+    return copyOf(trip);
+  }
+
+  static Trip copyOf(Trip trip) {
     return new Trip(trip.getId(), trip.getRoute(), trip.getDate(), trip.getDepartureTime(),
         trip.getBusId(), trip.getStatus());
   }

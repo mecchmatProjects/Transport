@@ -34,9 +34,11 @@ public class BusService extends AbstractCrudService<Bus, String> {
         .toList();
   }
 
-  /** Рейси автобуса, які ще не завершені й не скасовані. */
+  /** Копії рейсів автобуса, які ще не завершені й не скасовані. */
   public List<Trip> activeTripsOf(String busId) {
-    return trips.findAll(trip -> busId.equals(trip.getBusId()) && isActive(trip));
+    return trips.findAll(trip -> busId.equals(trip.getBusId()) && isActive(trip)).stream()
+        .map(TripService::copyOf)
+        .toList();
   }
 
   @Override
@@ -55,6 +57,12 @@ public class BusService extends AbstractCrudService<Bus, String> {
     trips.findAll(trip -> id.equals(trip.getBusId())).stream().findFirst().ifPresent(trip -> {
       throw new ValidationException("bus " + id + " is referenced by trip " + trip.getId());
     });
+  }
+
+  @Override
+  protected Bus copy(Bus bus) {
+    return new Bus(bus.getId(), bus.getModel(), bus.getSeats(), bus.getLuggageCapacityKg(),
+        bus.getDepotCityId(), bus.getStatus(), bus.getUnavailablePeriods());
   }
 
   static boolean isActive(Trip trip) {

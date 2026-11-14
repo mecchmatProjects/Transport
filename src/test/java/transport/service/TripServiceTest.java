@@ -174,4 +174,61 @@ class TripServiceTest {
     assertThat(service.findByBus("AA1234")).extracting(Trip::getId).containsExactly("T2");
     assertThat(service.findByBus("NOBUS")).isEmpty();
   }
+
+  // Рев'ю PR #10, N1: об'єкт, повернутий командою, не є збереженим екземпляром
+  @Test
+  void returnedTripIsDetachedFromRepository() {
+    service.create(f.trip("T1", LocalTime.of(6, 0)));
+    service.create(f.trip("T2", LocalTime.of(18, 0)));
+    service.assignBus("T1", "AA1234");
+
+    Trip assigned = service.assignBus("T2", "AA1234");
+    assigned.reschedule(LocalTime.of(9, 0));
+
+    assertThat(service.get("T2").getDepartureTime()).isEqualTo(LocalTime.of(18, 0));
+    service.update(service.get("T1"));
+  }
+
+  // N2: об'єкт, переданий у create, після виклику можна змінювати без наслідків
+  @Test
+  void createStoresCopyOfArgument() {
+    service.create(f.trip("T1", LocalTime.of(6, 0)));
+    service.assignBus("T1", "AA1234");
+    Trip mine = f.trip("T2", LocalTime.of(18, 0));
+    service.create(mine);
+
+    mine.assignBus("AA1234");
+    mine.reschedule(LocalTime.of(8, 30));
+
+    Trip stored = service.get("T2");
+    assertThat(stored.getBusId()).isNull();
+    assertThat(stored.getDepartureTime()).isEqualTo(LocalTime.of(18, 0));
+  }
+
+  // N3: об'єкт, переданий у update, після виклику можна змінювати без наслідків
+  @Test
+  void updateStoresCopyOfArgument() {
+    service.create(f.trip("T1", LocalTime.of(6, 0)));
+    Trip upd = service.get("T1");
+    upd.reschedule(LocalTime.of(7, 0));
+    service.update(upd);
+
+    upd.changeStatus(TripStatus.CANCELLED);
+
+    Trip stored = service.get("T1");
+    assertThat(stored.getStatus()).isEqualTo(TripStatus.SCHEDULED);
+    assertThat(stored.getDepartureTime()).isEqualTo(LocalTime.of(7, 0));
+  }
+
+  @Test
+  void listReturnsCopies() {
+    service.create(f.trip("T1", LocalTime.of(6, 0)));
+
+    service.list().get(0).changeStatus(TripStatus.CANCELLED);
+    service.findByDate(DATE).get(0).assignBus("AA1234");
+
+    Trip stored = service.get("T1");
+    assertThat(stored.getStatus()).isEqualTo(TripStatus.SCHEDULED);
+    assertThat(stored.hasBus()).isFalse();
+  }
 }
