@@ -1,0 +1,32 @@
+[
+  {
+    "number": "T1-001",
+    "tripId": "T1",
+    "passenger": {
+      "id": "P1",
+      "fullName": "Ivan Petrenko",
+      "phone": null
+    },
+    "fromCityId": "KYIV",
+    "toCityId": "RIVNE",
+    "seatNumber": 1,
+    "price": 450,
+    "soldAt": "2026-09-01T10:00:00",
+    "status": "SOLD"
+  },
+  {
+    "number": "T1-001",
+    "tripId": "T1",
+    "passenger": {
+      "id": "P1",
+      "fullName": "Olha Koval",
+      "phone": null
+    },
+    "fromCityId": "KYIV",
+    "toCityId": "RIVNE",
+    "seatNumber": 2,
+    "price": 450,
+    "soldAt": "2026-09-01T10:00:00",
+    "status": "SOLD"
+  }
+]

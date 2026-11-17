@@ -1,0 +1,29 @@
+[
+  {
+    "id": "AA1234AB",
+    "model": "Setra S 515 HD",
+    "seats": 49,
+    "luggageCapacityKg": 1500.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "AA0000AB",
+    "model": "Setra S 515 HD",
+    "seats": 0,
+    "luggageCapacityKg": 1500.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  },
+  {
+    "id": "AA9999AB",
+    "model": "Neoplan Tourliner",
+    "seats": 51,
+    "luggageCapacityKg": -100.0,
+    "depotCityId": "KYIV",
+    "status": "AVAILABLE",
+    "unavailablePeriods": []
+  }
+]

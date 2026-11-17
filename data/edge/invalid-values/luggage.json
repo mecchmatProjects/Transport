@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "PASSENGER",
+    "id": "L1",
+    "tripId": "T1",
+    "fromCityId": "KYIV",
+    "toCityId": "LUTSK",
+    "weightKg": 18.0,
+    "volumeM3": 0.1,
+    "price": 320,
+    "status": "REGISTERED",
+    "ticketNumber": "T1-001"
+  },
+  {
+    "kind": "PASSENGER",
+    "id": "L2",
+    "tripId": "T1",
+    "fromCityId": "KYIV",
+    "toCityId": "LUTSK",
+    "weightKg": -18.0,
+    "volumeM3": 0.1,
+    "price": 320,
+    "status": "REGISTERED",
+    "ticketNumber": "T1-001"
+  }
+]

@@ -1,0 +1,45 @@
+[
+  {
+    "number": 1,
+    "name": "Kyiv - Rivne",
+    "segments": [
+      {
+        "from": "KYIV",
+        "to": "ZHYTOMYR",
+        "distanceKm": 140.0,
+        "travelTime": "PT2H",
+        "dwellAtEnd": "PT10M"
+      },
+      {
+        "from": "ZHYTOMYR",
+        "to": "RIVNE",
+        "distanceKm": 190.0,
+        "travelTime": "PT2H45M"
+      }
+    ]
+  },
+  {
+    "number": 2,
+    "name": "Kyiv - Odesa",
+    "segments": [
+      {
+        "from": "KYIV",
+        "to": "ODESA",
+        "distanceKm": 475.0,
+        "travelTime": "PT6H30M"
+      }
+    ]
+  },
+  {
+    "number": 3,
+    "name": "Rivne - Lutsk",
+    "segments": [
+      {
+        "from": "RIVNE",
+        "to": "LUTSK",
+        "distanceKm": 75.0,
+        "travelTime": "PT1H5M"
+      }
+    ]
+  }
+]

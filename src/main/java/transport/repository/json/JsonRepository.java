@@ -1,14 +1,18 @@
 package transport.repository.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import transport.exception.StorageException;
 import transport.repository.InMemoryRepository;
+import transport.repository.LoadError;
+import transport.repository.LoadResult;
 
 /**
  * Змінену сутність треба знову передати в {@code save}, інакше файл не оновиться.
@@ -21,6 +25,7 @@ public final class JsonRepository<T, ID> extends InMemoryRepository<T, ID> {
   private final Path file;
   private final JsonCodec codec;
   private final TypeReference<List<T>> listType;
+  private LoadResult<T> loadResult = new LoadResult<>(List.of(), List.of());
 
   public JsonRepository(
       Path file,
@@ -37,6 +42,11 @@ public final class JsonRepository<T, ID> extends InMemoryRepository<T, ID> {
 
   public Path file() {
     return file;
+  }
+
+  /** Прийняті й відкинуті записи; відкинуті зникнуть з файлу після наступного save. */
+  public LoadResult<T> loadResult() {
+    return loadResult;
   }
 
   @Override
@@ -78,19 +88,34 @@ public final class JsonRepository<T, ID> extends InMemoryRepository<T, ID> {
     if (!Files.exists(file)) {
       return;
     }
-    List<T> entities = codec.readFile(file, listType);
-    if (entities == null) {
-      return; // файл із вмістом null
-    }
-    for (T entity : entities) {
-      if (entity == null) {
-        throw new StorageException(file + ": null entry", null);
+    List<JsonNode> records = codec.readArray(file);
+    List<T> items = new ArrayList<>();
+    List<LoadError> errors = new ArrayList<>();
+    for (int i = 0; i < records.size(); i++) {
+      int record = i + 1;
+      JsonNode node = records.get(i);
+      if (node.isNull()) {
+        errors.add(error(record, "null entry"));
+        continue;
       }
-      ID id = idOf(entity);
-      if (existsById(id)) {
-        throw new StorageException(file + ": duplicate " + entityName() + " id " + id, null);
+      try {
+        T entity = codec.readElement(node, listType);
+        ID id = idOf(entity);
+        if (existsById(id)) {
+          errors.add(error(record, "duplicate " + entityName() + " id " + id
+              + ", the first record is kept"));
+          continue;
+        }
+        super.save(entity);
+        items.add(entity);
+      } catch (StorageException e) {
+        errors.add(error(record, e.getMessage()));
       }
-      super.save(entity);
     }
+    loadResult = new LoadResult<>(items, errors);
+  }
+
+  private LoadError error(int record, String message) {
+    return new LoadError(file.getFileName().toString(), record, message);
   }
 }
