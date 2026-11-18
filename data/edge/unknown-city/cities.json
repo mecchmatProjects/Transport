@@ -1,0 +1,26 @@
+[
+  {
+    "id": "KYIV",
+    "name": "Kyiv",
+    "latitude": 50.4501,
+    "longitude": 30.5234
+  },
+  {
+    "id": "ZHYTOMYR",
+    "name": "Zhytomyr",
+    "latitude": 50.2547,
+    "longitude": 28.6587
+  },
+  {
+    "id": "RIVNE",
+    "name": "Rivne",
+    "latitude": 50.6199,
+    "longitude": 26.2516
+  },
+  {
+    "id": "LUTSK",
+    "name": "Lutsk",
+    "latitude": 50.7472,
+    "longitude": 25.3254
+  }
+]

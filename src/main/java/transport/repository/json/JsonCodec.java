@@ -2,9 +2,12 @@ package transport.repository.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.JsonNodeFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
@@ -12,8 +15,10 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import transport.exception.StorageException;
@@ -156,6 +161,51 @@ public final class JsonCodec {
       return read(json, type);
     } catch (StorageException e) {
       throw new StorageException(file + ": " + e.getMessage(), e.getCause());
+    }
+  }
+
+  /** Записи масиву з файлу; {@code null} у файлі дає порожній список, не масив — помилка. */
+  public List<JsonNode> readArray(Path file) {
+    String json;
+    try {
+      json = Files.readString(file);
+    } catch (IOException e) {
+      throw new StorageException("cannot read " + file + ": " + e.getMessage(), e);
+    }
+    JsonNode root;
+    try {
+      // дробові числа як BigDecimal, щоб ціна 420.00 не стала 420.0
+      root = mapper.reader()
+          .with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+          .without(JsonNodeFeature.STRIP_TRAILING_BIGDECIMAL_ZEROES)
+          .readTree(json);
+    } catch (IOException e) {
+      throw new StorageException(file + ": " + message(e), e);
+    }
+    if (root == null || root.isMissingNode()) {
+      throw new StorageException(file + ": empty file", null);
+    }
+    if (root.isNull()) {
+      return List.of();
+    }
+    if (!root.isArray()) {
+      throw new StorageException(file + ": expected a JSON array", null);
+    }
+    List<JsonNode> records = new ArrayList<>(root.size());
+    root.forEach(records::add);
+    return records;
+  }
+
+  /** Розбирає один запис масиву {@code listType}; помилка — {@code StorageException}. */
+  public <T> T readElement(JsonNode node, TypeReference<List<T>> listType) {
+    JavaType elementType = mapper.getTypeFactory().constructType(listType).getContentType();
+    try {
+      return withCatalogue(mapper.readerFor(elementType)).readValue(node);
+    } catch (IOException e) {
+      // помилку конструктора моделі показуємо без обгортки Jackson
+      Throwable cause = e.getCause();
+      String reason = cause instanceof IllegalArgumentException ? cause.getMessage() : message(e);
+      throw new StorageException(reason, e);
     }
   }
 

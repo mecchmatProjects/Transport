@@ -1,0 +1,14 @@
+[
+  {
+    "id": "KYIV",
+    "name": "Kyiv",
+    "latitude": 50.4501,
+    "longitude": 30.5234
+  },
+  {
+    "id": "ODESA",
+    "name": "",
+    "latitude": 46.4825,
+    "longitude": 30.7233
+  }
+]

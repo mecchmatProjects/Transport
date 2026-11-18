@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import transport.exception.StorageException;
 import transport.model.City;
+import transport.repository.LoadError;
 
 class JsonRepositoryTest {
 
@@ -48,14 +49,18 @@ class JsonRepositoryTest {
   }
 
   @Test
-  void duplicateIdInFileFails() throws Exception {
+  void duplicateIdInFileKeepsFirstRecord() throws Exception {
     Path file = dir.resolve("cities.json");
-    String city = new JsonCodec().write(KYIV);
-    Files.writeString(file, "[" + city + "," + city + "]");
+    City renamed = new City("KYIV", "Kiev", 50.4501, 30.5234);
+    JsonCodec codec = new JsonCodec();
+    Files.writeString(file, "[" + codec.write(KYIV) + "," + codec.write(renamed) + "]");
 
-    assertThatThrownBy(() -> open(file))
-        .isInstanceOf(StorageException.class)
-        .hasMessageContaining("duplicate City id KYIV");
+    JsonRepository<City, String> repo = open(file);
+
+    assertThat(repo.findAll()).containsExactly(KYIV);
+    assertThat(repo.findById("KYIV").orElseThrow().name()).isEqualTo("Kyiv");
+    assertThat(repo.loadResult().errors()).singleElement()
+        .hasToString("cities.json, record 2: duplicate City id KYIV, the first record is kept");
   }
 
   @Test
@@ -66,12 +71,37 @@ class JsonRepositoryTest {
   }
 
   @Test
-  void nullEntryFails() throws Exception {
+  void nullEntryIsReported() throws Exception {
     Path file = dir.resolve("cities.json");
-    Files.writeString(file, "[null]");
+    Files.writeString(file, "[null, " + new JsonCodec().write(LVIV) + "]");
+
+    JsonRepository<City, String> repo = open(file);
+
+    assertThat(repo.findAll()).containsExactly(LVIV);
+    assertThat(repo.loadResult().errors()).extracting(LoadError::record).containsExactly(1);
+  }
+
+  @Test
+  void invalidRecordIsSkippedAndRestLoads() throws Exception {
+    Path file = dir.resolve("cities.json");
+    String blankName = "{\"id\":\"ODESA\",\"name\":\"\",\"latitude\":46.48,\"longitude\":30.72}";
+    Files.writeString(file, "[" + new JsonCodec().write(KYIV) + "," + blankName + "]");
+
+    JsonRepository<City, String> repo = open(file);
+
+    assertThat(repo.findAll()).containsExactly(KYIV);
+    assertThat(repo.loadResult().items()).containsExactly(KYIV);
+    assertThat(repo.loadResult().errors()).singleElement()
+        .hasToString("cities.json, record 2: name must not be blank");
+  }
+
+  @Test
+  void nonArrayFileFails() throws Exception {
+    Path file = dir.resolve("cities.json");
+    Files.writeString(file, "{}");
     assertThatThrownBy(() -> open(file))
         .isInstanceOf(StorageException.class)
-        .hasMessageContaining("cities.json: null entry");
+        .hasMessageContaining("expected a JSON array");
   }
 
   @Test
