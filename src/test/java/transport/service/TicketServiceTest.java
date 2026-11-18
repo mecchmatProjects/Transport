@@ -184,6 +184,19 @@ class TicketServiceTest {
     assertThat(service.passengersBySegment("T1")).containsExactly(1, 2, 1);
   }
 
+  // Квиток із JSON з містом поза маршрутом не валить продаж і звіт по ділянках
+  @Test
+  void brokenTicketDoesNotBreakSalesAndKeepsItsSeat() {
+    f.tickets.add(new Ticket("T1-900", "T1", IVAN, "KYIV", "UMAN", 1,
+        BigDecimal.TEN, LocalDateTime.of(2026, 9, 1, 9, 0)));
+
+    assertThat(service.passengersBySegment("T1")).containsExactly(0, 0, 0);
+    assertThat(service.availableSeats("T1", "RIVNE", "LUTSK")).isEqualTo(1);
+    assertThat(service.sell("T1", OLHA, "RIVNE", "LUTSK").getSeatNumber()).isEqualTo(2);
+    assertThatThrownBy(() -> service.sell("T1", PETRO, "KYIV", "ZHYTOMYR", 1))
+        .isInstanceOf(ValidationException.class);
+  }
+
   @Test
   void cancelAllForTripSkipsInactive() {
     service.sell("T1", IVAN, "KYIV", "RIVNE");

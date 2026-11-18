@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import transport.exception.NoSeatsAvailableException;
 import transport.exception.ValidationException;
@@ -116,10 +117,12 @@ public class TicketService {
     Route route = trip.getRoute();
     int[] load = new int[route.segments().size()];
     for (Ticket t : activeTickets(tripId)) {
-      int[] range = route.stopRange(t.getFromCityId(), t.getToCityId());
-      for (int s = range[0]; s < range[1]; s++) {
-        load[s]++;
-      }
+      // Квиток з містами поза маршрутом не можна віднести до ділянок, тож пропускаємо
+      rangeOf(route, t).ifPresent(range -> {
+        for (int s = range[0]; s < range[1]; s++) {
+          load[s]++;
+        }
+      });
     }
     List<Integer> result = new ArrayList<>(load.length);
     for (int value : load) {
@@ -172,14 +175,24 @@ public class TicketService {
     boolean[] taken = new boolean[leg.bus.getSeats() + 1];
     Route route = leg.trip.getRoute();
     for (Ticket t : activeTickets(leg.trip.getId())) {
-      int[] range = route.stopRange(t.getFromCityId(), t.getToCityId());
-      boolean overlaps = range[0] < leg.toIndex && leg.fromIndex < range[1];
+      // Битий квиток займає місце на всьому рейсі, щоб не продати його двічі
+      boolean overlaps = rangeOf(route, t)
+          .map(range -> range[0] < leg.toIndex && leg.fromIndex < range[1])
+          .orElse(true);
       int seat = t.getSeatNumber();
       if (overlaps && seat < taken.length) {
         taken[seat] = true;
       }
     }
     return taken;
+  }
+
+  // Порожньо, якщо міста квитка (зіпсовані дані з JSON) не на маршруті
+  private static Optional<int[]> rangeOf(Route route, Ticket t) {
+    if (!route.servesDirection(t.getFromCityId(), t.getToCityId())) {
+      return Optional.empty();
+    }
+    return Optional.of(route.stopRange(t.getFromCityId(), t.getToCityId()));
   }
 
   private static OptionalInt firstFree(boolean[] taken) {
