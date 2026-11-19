@@ -24,7 +24,7 @@ public final class InstanceGenerator {
   static final LocalDate DAY = LocalDate.of(2026, 11, 2);
 
   private static final Duration DWELL = Duration.ofMinutes(10);
-  private static final double MIN_CITY_DISTANCE_KM = 20;
+  private static final double MIN_CITY_DISTANCE_KM = 10;
   private static final int MAX_PLACEMENT_ATTEMPTS = 100_000;
   private static final int[] SEATS = {30, 45, 50};
   private static final int[] FLEX_MINUTES = {0, 15, 30, 60};
@@ -49,7 +49,7 @@ public final class InstanceGenerator {
     List<City> cities = new ArrayList<>();
     int attempts = 0;
     while (cities.size() < count) {
-      // область приблизно 170 на 350 км, понад 90 міст не влізе
+      // область приблизно 80 на 160 км
       if (++attempts > MAX_PLACEMENT_ATTEMPTS) {
         throw new IllegalArgumentException(
             "cannot place " + count + " cities at least " + MIN_CITY_DISTANCE_KM + " km apart");
@@ -59,8 +59,8 @@ public final class InstanceGenerator {
           new City(
               String.format("C%02d", i),
               "City " + i,
-              49.5 + 1.5 * random.nextDouble(),
-              27 + 5 * random.nextDouble());
+              50 + 0.7 * random.nextDouble(),
+              29 + 2.2 * random.nextDouble());
       if (cities.stream().allMatch(c -> c.distanceKmTo(city) >= MIN_CITY_DISTANCE_KM)) {
         cities.add(city);
       }
