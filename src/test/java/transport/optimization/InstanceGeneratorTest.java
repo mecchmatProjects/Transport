@@ -1,9 +1,11 @@
 package transport.optimization;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import transport.model.Bus;
@@ -85,6 +87,13 @@ class InstanceGeneratorTest {
                               d.expectedPassengers() <= b.getSeats()
                                   && d.expectedLuggageKg() <= b.getLuggageCapacityKg()));
     }
+  }
+
+  @Test
+  void tooManyCitiesFailsInsteadOfHanging() {
+    ExperimentSize tooBig = new ExperimentSize("X", 150, 10, 5, 10);
+    assertThatThrownBy(() -> new InstanceGenerator(1).generate(tooBig))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @ParameterizedTest

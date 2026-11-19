@@ -25,6 +25,7 @@ public final class InstanceGenerator {
 
   private static final Duration DWELL = Duration.ofMinutes(10);
   private static final double MIN_CITY_DISTANCE_KM = 20;
+  private static final int MAX_PLACEMENT_ATTEMPTS = 100_000;
   private static final int[] SEATS = {30, 45, 50};
   private static final int[] FLEX_MINUTES = {0, 15, 30, 60};
 
@@ -46,9 +47,13 @@ public final class InstanceGenerator {
 
   private static List<City> cities(int count, Random random) {
     List<City> cities = new ArrayList<>();
+    int attempts = 0;
     while (cities.size() < count) {
-      // область приблизно 170 x 350 км, міста не ближче 20 км одне до одного;
-      // понад сотню міст сюди вже не влізе
+      // область приблизно 170 на 350 км, понад 90 міст не влізе
+      if (++attempts > MAX_PLACEMENT_ATTEMPTS) {
+        throw new IllegalArgumentException(
+            "cannot place " + count + " cities at least " + MIN_CITY_DISTANCE_KM + " km apart");
+      }
       int i = cities.size() + 1;
       City city =
           new City(
