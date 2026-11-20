@@ -89,6 +89,19 @@ class InstanceGeneratorTest {
     }
   }
 
+  @ParameterizedTest
+  @MethodSource("sizes")
+  void referenceScheduleCoversAllTripsWithoutConflicts(ExperimentSize size) {
+    for (long seed = 1; seed <= 20; seed++) {
+      InstanceGenerator.Generated generated =
+          new InstanceGenerator(seed).generateWithReference(size);
+
+      assertThat(generated.reference().unassignedDemandIds()).isEmpty();
+      assertThat(new ConflictChecker().check(generated.reference(), generated.problem()))
+          .isEmpty();
+    }
+  }
+
   @Test
   void tooManyCitiesFailsInsteadOfHanging() {
     ExperimentSize tooBig = new ExperimentSize("X", 150, 10, 5, 10);
