@@ -7,7 +7,7 @@ import transport.exception.TransportException;
 import transport.repository.LoadError;
 import transport.repository.json.JsonStorage;
 
-/** Точка входу; поки лише демо-команди зрізу 1, повне меню з'явиться в K5. */
+/** Точка входу: перевірка даних і демо-сценарії зрізів. */
 public final class Main {
 
   private static final Path DEFAULT_DATA = Path.of("data");
@@ -22,6 +22,11 @@ public final class Main {
       switch (command) {
         case "check" -> check(dataDir, out);
         case "tickets-demo" -> new TicketDemo(dataDir, out).run();
+        case "demo" -> {
+          if (!new DemoScenario(dataDir, out).run()) {
+            System.exit(1);
+          }
+        }
         default -> usage(out);
       }
     } catch (TransportException e) {
@@ -31,7 +36,7 @@ public final class Main {
   }
 
   // Граничні випадки 1–3: некоректні записи відкидаються, решта даних завантажується
-  static void check(Path dataDir, PrintStream out) {
+  static JsonStorage check(Path dataDir, PrintStream out) {
     JsonStorage storage = JsonStorage.openSkippingInvalid(dataDir);
     out.printf("Loaded from %s: %d cities, %d routes, %d buses, %d tariffs, %d trips,"
             + " %d tickets, %d luggage%n",
@@ -41,15 +46,17 @@ public final class Main {
     List<LoadError> errors = storage.loadErrors();
     if (errors.isEmpty()) {
       out.println("No invalid records.");
-      return;
+      return storage;
     }
     out.println("Skipped " + errors.size() + " invalid record(s):");
     errors.forEach(e -> out.println("  " + e));
+    return storage;
   }
 
   private static void usage(PrintStream out) {
     out.println("Usage:");
     out.println("  check [dataDir]          load data and list invalid records");
     out.println("  tickets-demo [dataDir]   sell and cancel tickets on a demo trip");
+    out.println("  demo [dataDir]           slice 1: edge cases 1-8 with a summary table");
   }
 }
