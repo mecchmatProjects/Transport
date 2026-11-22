@@ -4,10 +4,15 @@ import java.io.PrintStream;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import transport.config.AppConfig;
+import transport.exception.InvalidStatusTransitionException;
+import transport.exception.NoSeatsAvailableException;
 import transport.exception.TransportException;
+import transport.exception.ValidationException;
 import transport.model.Bus;
 import transport.model.City;
 import transport.model.Luggage;
@@ -58,12 +63,13 @@ final class TicketDemo {
         FallbackTariffPolicy.tableThenDistance(tariffService, AppConfig.load(dataDir).tariff()));
   }
 
-  void run() {
+  List<CaseResult> run() {
     List<City> stops = route.stops();
     String a = stops.get(0).id();
     String b = stops.get(1).id();
     String c = stops.get(stops.size() - 2).id();
     String d = stops.get(stops.size() - 1).id();
+    List<CaseResult> results = new ArrayList<>();
     out.println("Trip " + TRIP_ID + ", route " + route.number() + " " + route.name()
         + ", bus " + BUS_ID + " with 2 seats");
 
@@ -73,42 +79,71 @@ final class TicketDemo {
     showLoad();
 
     step("Case 6: " + a + " -> " + d + " needs the full last segment");
-    sell("P3", "Petro Bondar", a, d);
+    results.add(refusal(6, "Full segment inside the leg", NoSeatsAvailableException.class,
+        sell("P3", "Petro Bondar", a, d)));
 
     step("Case 4: the last seat on " + a + " -> " + c);
     sell("P3", "Petro Bondar", a, c);
-    sell("P4", "Mariia Shevchenko", a, c);
+    Optional<TransportException> last = sell("P4", "Mariia Shevchenko", a, c);
+    int left = tickets.availableSeats(TRIP_ID, a, c);
+    results.add(new CaseResult(4, "Sell the last seat", "sold, 0 seats left",
+        last.map(TicketDemo::describe).orElse("sold, " + left + " seats left"),
+        last.isEmpty() && left == 0));
     showLoad();
 
     step("Case 5: one more ticket " + a + " -> " + b);
-    sell("P5", "Andrii Melnyk", a, b);
+    results.add(refusal(5, "Seat on a full segment", NoSeatsAvailableException.class,
+        sell("P5", "Andrii Melnyk", a, b)));
 
     step("Case 7: wrong direction " + d + " -> " + a);
-    sell("P5", "Andrii Melnyk", d, a);
+    results.add(refusal(7, "from after to", ValidationException.class,
+        sell("P5", "Andrii Melnyk", d, a)));
 
     step("Case 8: cancel twice");
     String number = tickets.findByTrip(TRIP_ID).get(0).getNumber();
     cancel(number);
-    cancel(number);
+    results.add(refusal(8, "Cancel a cancelled ticket",
+        InvalidStatusTransitionException.class, cancel(number)));
     showLoad();
+    return results;
   }
 
-  private void sell(String passengerId, String name, String from, String to) {
+  private static CaseResult refusal(int number, String title,
+      Class<? extends TransportException> expected, Optional<TransportException> error) {
+    return new CaseResult(number, title, describe(expected),
+        error.map(TicketDemo::describe).orElse("accepted"),
+        error.filter(expected::isInstance).isPresent());
+  }
+
+  private static String describe(TransportException e) {
+    return describe(e.getClass());
+  }
+
+  private static String describe(Class<? extends TransportException> type) {
+    return "refused: " + type.getSimpleName().replace("Exception", "");
+  }
+
+  private Optional<TransportException> sell(
+      String passengerId, String name, String from, String to) {
     try {
       Ticket t = tickets.sell(TRIP_ID, new Passenger(passengerId, name, null), from, to);
       out.printf("  SOLD %s: %s, %s -> %s, seat %d, %s UAH%n",
           t.getNumber(), name, from, to, t.getSeatNumber(), t.getPrice());
+      return Optional.empty();
     } catch (TransportException e) {
       out.println("  REJECTED " + from + " -> " + to + ": " + e.getMessage());
+      return Optional.of(e);
     }
   }
 
-  private void cancel(String number) {
+  private Optional<TransportException> cancel(String number) {
     try {
       tickets.cancel(number);
       out.println("  CANCELLED " + number);
+      return Optional.empty();
     } catch (TransportException e) {
       out.println("  REJECTED cancel " + number + ": " + e.getMessage());
+      return Optional.of(e);
     }
   }
 

@@ -6,4 +6,4 @@
 | `invalid-values/` | 2 | порожня назва міста, автобус на 0 місць, від'ємна багажна місткість, від'ємна вага багажу |
 | `duplicates/` | 3 | дубль id автобуса й номера квитка |
 
-`JsonStorage.openSkippingInvalid` завантажує решту записів і повертає список помилок, `JsonStorage.open` кидає `StorageException`. Перевірка: `EdgeDataTest`, демо: `check data/edge/<тека>` у CLI.
+`JsonStorage.openSkippingInvalid` завантажує решту записів і повертає список помилок, `JsonStorage.open` кидає `StorageException`. Перевірка: `EdgeDataTest`, демо: `check data/edge/<тека>` у CLI, усі випадки 1–8 разом із таблицею-підсумком: `demo`.
