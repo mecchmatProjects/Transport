@@ -195,6 +195,13 @@ class ConflictCheckerTest {
   }
 
   @Test
+  void nightTripThenNextAfterExactTurnaround() {
+    trip("D1", KYIV_ZHYTOMYR, "23:00");
+    trip("D2", ZHYTOMYR_KYIV, at("01:30").plusDays(1), 40, 500);
+    assertThat(conflicts(bus("ZHYTOMYR"))).isEmpty();
+  }
+
+  @Test
   void nextDayStartsWhereBusEnded() {
     trip("D1", route(5, KYIV, ZHYTOMYR, 120, 480), "15:00");
     trip("D2", ZHYTOMYR_KYIV, at("00:00").plusDays(1), 40, 500);
