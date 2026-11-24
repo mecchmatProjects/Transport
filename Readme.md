@@ -1,3 +1,113 @@
+# Transport
+
+Семестровий проєкт з Java: інформаційна система міжміських автобусних перевезень із модулем оптимізації розкладу.
+Команда: Кирило Батрак ([@kyrylobatrak](https://github.com/kyrylobatrak)), Максим ([@mkrtmkm](https://github.com/mkrtmkm)).
+Умова завдання від викладача — нижче, у розділі [«Курсовий проєкт»](#курсовий-проєкт).
+
+| | |
+| --- | --- |
+| Мова | Java 21 |
+| Збірка | Maven |
+| JSON | Jackson 2.17 (+ `jsr310` для `LocalDate`, `Duration`) |
+| Тести | JUnit 5, AssertJ, покриття JaCoCo |
+| CI | GitHub Actions, `mvn -B verify` на кожен PR і push у `main` |
+
+## Запуск
+
+```bash
+# збірка, усі тести, звіт покриття в target/site/jacoco/index.html
+mvn verify
+
+# CLI: <команда> [тека з даними], за замовчуванням data/
+mvn -q compile exec:java -Dexec.mainClass=transport.cli.Main -Dexec.args="check"
+mvn -q compile exec:java -Dexec.mainClass=transport.cli.Main -Dexec.args="check data/edge/duplicates"
+mvn -q compile exec:java -Dexec.mainClass=transport.cli.Main -Dexec.args="tickets-demo"
+mvn -q compile exec:java -Dexec.mainClass=transport.cli.Main -Dexec.args="demo"
+```
+
+| Команда | Що робить | Граничні випадки |
+| --- | --- | --- |
+| `check [dataDir]` | Завантажує дані, друкує кількість записів і список відкинутих некоректних записів | 1–3 |
+| `tickets-demo [dataDir]` | Продаж і скасування квитків на демо-рейсі маршруту 1 (зміни лише в пам'яті) | 4–8 |
+| `demo [dataDir]` | Зріз 1: перевірка основних даних, випадки 1–8, підсумкова таблиця; код виходу 1, якщо щось не пройшло | 1–8 |
+
+## Структура пакетів
+
+```text
+src/main/java/transport/
+├── model/           сутності предметної області: City, Bus, Route, RouteSegment, Trip, Ticket,
+│                    Luggage, Shipment, Tariff, ScheduleTemplate, TimeWindow, статуси
+├── exception/       ієрархія від TransportException: валідація, місткість, переходи статусів, сховище
+├── repository/      Repository<T, ID>, InMemoryRepository, LoadResult<T> / LoadError
+│   └── json/        JsonStorage, JsonRepository, JsonCodec: читання й запис data/*.json
+├── config/          AppConfig, TariffConfig: параметри з data/config.json
+├── service/         CRUD (City, Bus, Route, Trip, Tariff), TicketService з посегментною місткістю
+│   └── tariff/      TariffPolicy: таблична, за відстанню, таблиця з відкатом на відстань
+├── optimization/    ProblemInstance, Schedule, CostFunction, ConflictChecker, LowerBound,
+│                    InstanceGenerator (S1–S4), CityGraph
+├── util/            DistanceCalculator
+└── cli/             Main, DemoScenario, TicketDemo
+```
+
+| Пакет | Хто | Залежить від |
+| --- | --- | --- |
+| `model`, `exception`, `repository`, `config`, `service` (крім `ScheduleService`), `cli` | Кирило | — |
+| `optimization`, `util`, `ScheduleService`, `scripts/` | Максим | `model` |
+
+`optimization` не залежить від `repository` і `service`: оптимізатор отримує готовий `ProblemInstance`.
+
+## Дані
+
+| Файл | Записів | Зміст |
+| --- | ---: | --- |
+| `data/cities.json` | 30 | міста з координатами |
+| `data/routes.json` | 8 | 4 маршрути з Києва (Луцьк, Одеса, Запоріжжя, Львів) і зворотні, з ділянками: відстань, час, стоянка |
+| `data/buses.json` | 12 | автобуси: місця, багажна місткість, депо, статус, періоди недоступності |
+| `data/tariffs.json` | 83 | тарифи між парами міст |
+| `data/schedule-templates.json` | 9 | шаблони рейсів: часи відправлення, дні, допустимий зсув, пріоритет, очікуване завантаження |
+| `data/config.json` | — | тарифні коефіцієнти (`baseFare`, `farePerKm`, `luggagePerKgPerKm`), `maxRoutes = 30` |
+| `data/edge/` | — | навмисно зламані дані для випадків 1–3, див. [`data/edge/README.md`](data/edge/README.md) |
+
+`trips.json`, `tickets.json`, `luggage.json` необов'язкові: якщо файлу немає, колекція порожня.
+Тарифи змінюються в `data/config.json` і `data/tariffs.json` без зміни коду.
+
+## Документація
+
+| Документ | Зміст |
+| --- | --- |
+| [`docs/math-model.md`](docs/math-model.md) | математична модель задачі розкладу, цільова функція, обмеження |
+| [`docs/edge-cases.md`](docs/edge-cases.md) | граничні випадки 1–13: очікувана поведінка, тест, дані |
+
+## Чек-лист мінімальних вимог (§20)
+
+Стан на 24.11.2026, `main` = `78e99d8`.
+
+| # | Вимога | Стан | Де |
+| --- | --- | --- | --- |
+| 1 | Не менше 20–30 міст | ✅ 30 | `data/cities.json` |
+| 2 | Не менше 5 маршрутів | ✅ 8 | `data/routes.json` |
+| 3 | Можливість створення до 30 маршрутів | ✅ | `RouteService`, `maxRoutes` у `config.json` |
+| 4 | Облік автобусів | ✅ | `BusService`, `Bus`, `BusStatus` |
+| 5 | Формування рейсів | ✅ | `TripService`, `ScheduleTemplate` |
+| 6 | Продаж та скасування квитків | ✅ | `TicketService`, випадки 4–8 |
+| 7 | Облік багажу | ⏳ є модель `Luggage`, сервісу ще немає | `LuggageService` |
+| 8 | Тарифна система | ✅ | `TariffService`, `TariffPolicy` |
+| 9 | Контроль пасажирської та багажної місткості | ⏳ пасажири ✅, багаж ні | `TicketService`, `LuggageService` |
+| 10 | Не менше трьох типів звітів | ❌ | `SalesReport`, `LuggageReport`, `BusReport` |
+| 11 | Побудова початкового розкладу | ❌ | `GreedyOptimizer` |
+| 12 | Алгоритм оптимізації розкладу | ❌ є `LowerBound` (мін. кількість автобусів) | `LocalSearchOptimizer` |
+| 13 | Перевірка відсутності конфліктів автобусів | ✅ | `ConflictChecker`, випадки 9–11 |
+| 14 | Збереження та завантаження даних | ✅ | `JsonStorage` |
+| 15 | Набір автоматизованих тестів | ✅ 219 тестів | `src/test/java` |
+
+## Як ми працюємо
+
+- Гілка на задачу: `feature/<id>-<назва>`, коміти з префіксом ID (`K3: …`), PR до ~400 рядків, squash merge.
+- Рев'ю іншою людиною протягом 24 год, CI зелений до merge.
+- Зміни `model/` та інтерфейсів — мітка `contract-change`, схвалюють обидва.
+
+---
+
 # Курсовий проєкт
 
 ## **Система управління міжміськими автобусними перевезеннями та оптимізації маршрутів**
