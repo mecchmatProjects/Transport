@@ -125,6 +125,29 @@ class GreedyOptimizerTest {
   }
 
   @Test
+  void importantTripGoesFirst() {
+    trip("low", K_Z, "08:00", 0, 0, 20);
+    trip("high", K_Z, "08:30", 0, 5, 20);
+    bus("b1", "K");
+    Schedule schedule = greedy.optimize(problem()).schedule();
+
+    assertThat(schedule.assignmentOf("high")).isPresent();
+    assertThat(schedule.unassignedDemandIds()).containsExactly("low");
+  }
+
+  @Test
+  void newBusComesFromNearestDepot() {
+    // b1 з R теж встигає, але йому 180 хв підгону
+    trip("t1", K_Z, "08:00", 0, 1, 20);
+    bus("b1", "R");
+    bus("b2", "K");
+    OptimizationResult result = greedy.optimize(problem());
+
+    assertThat(result.schedule().usedBusIds()).containsExactly("b2");
+    assertThat(result.metrics().deadheadKm()).isZero();
+  }
+
+  @Test
   void notEnoughBusesLeavesTripsUnassigned() {
     trip("t1", K_Z, "08:00", 0, 1, 20);
     trip("t2", K_Z, "08:00", 0, 1, 20);

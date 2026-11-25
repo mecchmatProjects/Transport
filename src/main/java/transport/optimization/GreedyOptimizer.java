@@ -11,13 +11,15 @@ import java.util.stream.Collectors;
 import transport.model.Bus;
 
 /**
- * Рейси за бажаним часом відправлення. Для кожного автобуса береться найближчий до бажаного час без
- * конфліктів з кроком 5 хв у межах вікна, а з автобусів той, що найменше простоює перед рейсом.
- * Новий автобус береться, лише якщо задіяні не підходять. Інакше рейс лишається непокритим.
+ * Спершу важливіші рейси, далі за бажаним часом відправлення. Для кожного автобуса береться
+ * найближчий до бажаного час без конфліктів з кроком 5 хв у межах вікна, а з автобусів той, що
+ * найменше чекає перед рейсом. Новий автобус береться, лише якщо задіяні не підходять, і з них той,
+ * чиє депо найближче. Якщо не підходить жоден, рейс лишається непокритим.
  */
 public final class GreedyOptimizer implements ScheduleOptimizer {
 
   private static final int STEP_MINUTES = 5;
+  private static final long FROM_DEPOT = Long.MAX_VALUE / 2;
 
   private final CostFunction cost;
   private final ConflictChecker checker = new ConflictChecker();
@@ -36,20 +38,23 @@ public final class GreedyOptimizer implements ScheduleOptimizer {
     long started = System.nanoTime();
     List<TripDemand> order = new ArrayList<>(problem.demands());
     order.sort(
-        Comparator.comparing(TripDemand::preferredDeparture).thenComparing(TripDemand::id));
+        Comparator.comparingInt(TripDemand::priority)
+            .reversed()
+            .thenComparing(TripDemand::preferredDeparture)
+            .thenComparing(TripDemand::id));
     Map<String, TripDemand> demands =
         order.stream().collect(Collectors.toMap(TripDemand::id, Function.identity()));
     Schedule schedule = new Schedule(order.stream().map(TripDemand::id).toList());
     for (TripDemand demand : order) {
       Assignment best = null;
-      long bestIdle = Long.MAX_VALUE;
+      long bestScore = Long.MAX_VALUE;
       for (Bus bus : problem.buses()) {
         Assignment candidate = firstFit(schedule, demand, bus, problem);
         if (candidate != null) {
-          long idle = idleBefore(schedule, candidate, demands);
-          if (idle < bestIdle) {
+          long score = score(schedule, candidate, bus, demands, problem);
+          if (score < bestScore) {
             best = candidate;
-            bestIdle = idle;
+            bestScore = score;
           }
         }
       }
@@ -76,9 +81,14 @@ public final class GreedyOptimizer implements ScheduleOptimizer {
     return null;
   }
 
-  // хвилини від кінця попереднього рейсу автобуса; Long.MAX_VALUE - 1 для незадіяного
-  private static long idleBefore(
-      Schedule schedule, Assignment candidate, Map<String, TripDemand> demands) {
+  // хвилини від кінця попереднього рейсу разом з підгоном і розворотом, бо підгін теж втрата;
+  // без попереднього рейсу автобус їде з депо, такий варіант завжди гірший за задіяний автобус
+  private static long score(
+      Schedule schedule,
+      Assignment candidate,
+      Bus bus,
+      Map<String, TripDemand> demands,
+      ProblemInstance problem) {
     Assignment previous = null;
     for (Assignment a : schedule.assignmentsOf(candidate.busId())) {
       if (a.departure().isBefore(candidate.departure())) {
@@ -86,7 +96,14 @@ public final class GreedyOptimizer implements ScheduleOptimizer {
       }
     }
     if (previous == null) {
-      return Long.MAX_VALUE - 1;
+      TripDemand demand = demands.get(candidate.demandId());
+      return FROM_DEPOT
+          + problem
+              .graph()
+              .deadheadMinutes(
+                  bus.getDepotCityId(),
+                  demand.originCityId(),
+                  problem.constraints().avgSpeedKmh());
     }
     LocalDateTime end = previous.departure().plus(demands.get(previous.demandId()).duration());
     return Duration.between(end, candidate.departure()).toMinutes();
