@@ -27,6 +27,11 @@ public final class Main {
             System.exit(1);
           }
         }
+        case "luggage-demo" -> {
+          if (!new LuggageDemo(dataDir, out).run()) {
+            System.exit(1);
+          }
+        }
         default -> usage(out);
       }
     } catch (TransportException e) {
@@ -58,5 +63,6 @@ public final class Main {
     out.println("  check [dataDir]          load data and list invalid records");
     out.println("  tickets-demo [dataDir]   sell and cancel tickets on a demo trip");
     out.println("  demo [dataDir]           slice 1: edge cases 1-8 with a summary table");
+    out.println("  luggage-demo [dataDir]   register and cancel luggage, cases 14-18 with a table");
   }
 }
