@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,8 @@ import transport.model.Bus;
 import transport.model.City;
 import transport.model.Route;
 import transport.model.RouteSegment;
+import transport.model.ScheduleTemplate;
+import transport.repository.json.JsonStorage;
 
 class GreedyOptimizerTest {
 
@@ -197,9 +200,53 @@ class GreedyOptimizerTest {
       Schedule schedule = greedy.optimize(problem).schedule();
 
       assertThat(new ConflictChecker().check(schedule, problem)).isEmpty();
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource("sizes")
+  void coveringEverythingNeverNeedsMoreBusesThanReference(ExperimentSize size) {
+    for (long seed = 1; seed <= 20; seed++) {
+      InstanceGenerator.Generated generated =
+          new InstanceGenerator(seed).generateWithReference(size);
+      Schedule schedule = greedy.optimize(generated.problem()).schedule();
+
       if (schedule.unassignedDemandIds().isEmpty()) {
-        assertThat(schedule.usedBusIds()).hasSizeGreaterThanOrEqualTo(LowerBound.minBuses(problem));
+        assertThat(schedule.usedBusIds().size())
+            .isBetween(
+                LowerBound.minBuses(generated.problem()),
+                generated.reference().usedBusIds().size());
       }
     }
+  }
+
+  @Test
+  void seedDataHasNoConflicts() {
+    JsonStorage storage = JsonStorage.open(Path.of("data"));
+    List<TripDemand> seedDemands = new ArrayList<>();
+    for (ScheduleTemplate template : storage.scheduleTemplates().findAll()) {
+      Route route = storage.routes().findById(template.routeNumber()).orElseThrow();
+      for (LocalTime time : template.departureTimes()) {
+        seedDemands.add(
+            new TripDemand(
+                template.tripId(InstanceGenerator.DAY, time),
+                route,
+                InstanceGenerator.DAY.atTime(time),
+                template.flex(),
+                template.priority(),
+                template.expectedPassengers(),
+                template.expectedLuggageKg()));
+      }
+    }
+    ProblemInstance problem =
+        new ProblemInstance(
+            CityGraph.fromRoutes(storage.routes().findAll()),
+            storage.buses().findAll(),
+            seedDemands,
+            InstanceGenerator.CONSTRAINTS);
+    Schedule schedule = greedy.optimize(problem).schedule();
+
+    assertThat(seedDemands).isNotEmpty();
+    assertThat(new ConflictChecker().check(schedule, problem)).isEmpty();
   }
 }
