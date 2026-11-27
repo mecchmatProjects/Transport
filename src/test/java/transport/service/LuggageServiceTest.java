@@ -214,7 +214,7 @@ class LuggageServiceTest {
   }
 
   @Test
-  void arrivedAndDeliveredLuggageFreesCapacity() {
+  void arrivedAndDeliveredLuggageKeepsCapacity() {
     shipment("KYIV", "LUTSK", 100);
     service.load("T1-S001");
     service.depart("T1-S001");
@@ -222,8 +222,17 @@ class LuggageServiceTest {
 
     service.arrive("T1-S001");
 
-    assertThat(service.availableKg("T1", "KYIV", "LUTSK")).isEqualTo(100);
-    assertThat(service.loadBySegment("T1")).containsExactly(0.0, 0.0, 0.0);
+    assertThat(service.availableKg("T1", "KYIV", "LUTSK")).isZero();
+    assertThat(service.loadBySegment("T1")).containsExactly(100.0, 100.0, 100.0);
+    assertThatThrownBy(() -> shipment("KYIV", "LUTSK", 1))
+        .isInstanceOf(LuggageCapacityExceededException.class);
+
+    service.deliver("T1-S001");
+
+    assertThat(service.availableKg("T1", "KYIV", "LUTSK")).isZero();
+    assertThatThrownBy(() -> shipment("KYIV", "LUTSK", 1))
+        .isInstanceOf(LuggageCapacityExceededException.class);
+    assertThat(f.luggage.count()).isEqualTo(1);
   }
 
   @Test

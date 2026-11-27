@@ -76,8 +76,9 @@ class TicketAndLuggageTest {
     shipment.load();
     shipment.depart();
     shipment.arrive();
-    assertThat(shipment.occupiesCapacity()).isFalse();
+    assertThat(shipment.occupiesCapacity()).isTrue();
     shipment.deliver();
+    assertThat(shipment.occupiesCapacity()).isTrue();
     assertThat(shipment.getStatus()).isEqualTo(LuggageStatus.DELIVERED);
     assertThat(shipment.description()).contains("Olena");
   }

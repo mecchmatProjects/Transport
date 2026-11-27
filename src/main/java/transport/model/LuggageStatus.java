@@ -19,7 +19,8 @@ public enum LuggageStatus implements Transitional<LuggageStatus> {
     };
   }
 
+  // Рейс лишається SCHEDULED, тож прибулий і виданий багаж місце не звільняє; лише скасований
   public boolean occupiesCapacity() {
-    return this == REGISTERED || this == LOADED || this == IN_TRANSIT;
+    return this != CANCELLED;
   }
 }
