@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static transport.service.ServiceFixture.DATE;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -12,7 +14,11 @@ import transport.exception.ScheduleConflictException;
 import transport.exception.ValidationException;
 import transport.model.Bus;
 import transport.model.BusStatus;
+import transport.model.Contact;
+import transport.model.Passenger;
 import transport.model.Route;
+import transport.model.Shipment;
+import transport.model.Ticket;
 import transport.model.Trip;
 import transport.model.TripStatus;
 
@@ -218,6 +224,80 @@ class TripServiceTest {
     Trip stored = service.get("T1");
     assertThat(stored.getStatus()).isEqualTo(TripStatus.SCHEDULED);
     assertThat(stored.getDepartureTime()).isEqualTo(LocalTime.of(7, 0));
+  }
+
+  // Рев'ю PR #21, п. 2: заміна автобуса не має обходити контроль місць
+  @Test
+  void assignBusRejectsBusWithTooFewSeats() {
+    service.create(f.trip("T1", LocalTime.of(8, 0)));
+    service.assignBus("T1", "AA1234");
+    sellOn("TK1", "T1", "KYIV", "RIVNE", 1);
+    sellOn("TK2", "T1", "KYIV", "RIVNE", 2);
+    service.unassignBus("T1");
+    f.buses.add(new Bus("TINY", "Mini", 1, 100, "KYIV"));
+    f.buses.add(new Bus("PAIR", "Mini", 2, 100, "KYIV"));
+
+    assertThatThrownBy(() -> service.assignBus("T1", "TINY"))
+        .isInstanceOf(ValidationException.class)
+        .hasMessageContaining("seats");
+    assertThat(service.get("T1").hasBus()).isFalse();
+    assertThat(service.assignBus("T1", "PAIR").getBusId()).isEqualTo("PAIR");
+  }
+
+  @Test
+  void assignBusRejectsBusTooSmallForLuggage() {
+    service.create(f.trip("T1", LocalTime.of(8, 0)));
+    shipmentOn("S1", "T1", "KYIV", "LUTSK", 90);
+    f.buses.add(new Bus("LIGHT", "Mini", 10, 89.9, "KYIV"));
+    f.buses.add(new Bus("EXACT", "Mini", 10, 90, "KYIV"));
+
+    assertThatThrownBy(() -> service.assignBus("T1", "LIGHT"))
+        .isInstanceOf(ValidationException.class)
+        .hasMessageContaining("luggage");
+    assertThat(service.get("T1").hasBus()).isFalse();
+    assertThat(service.assignBus("T1", "EXACT").getBusId()).isEqualTo("EXACT");
+  }
+
+  @Test
+  void assignBusRejectsTicketForSeatBeyondBus() {
+    service.create(f.trip("T1", LocalTime.of(8, 0)));
+    sellOn("TK1", "T1", "KYIV", "RIVNE", 5);
+    f.buses.add(new Bus("SMALL", "Mini", 4, 100, "KYIV"));
+
+    assertThatThrownBy(() -> service.assignBus("T1", "SMALL"))
+        .isInstanceOf(ValidationException.class)
+        .hasMessageContaining("seat 5");
+  }
+
+  // Пасажири на різних ділянках не складаються, скасовані квиток і багаж не враховуються
+  @Test
+  void assignBusCountsPeakPerSegmentAndIgnoresCancelled() {
+    service.create(f.trip("T1", LocalTime.of(8, 0)));
+    sellOn("TK1", "T1", "KYIV", "ZHYTOMYR", 1);
+    sellOn("TK2", "T1", "RIVNE", "LUTSK", 1);
+    sellOn("TK3", "T1", "KYIV", "LUTSK", 1);
+    shipmentOn("S1", "T1", "KYIV", "ZHYTOMYR", 50);
+    shipmentOn("S2", "T1", "RIVNE", "LUTSK", 50);
+    shipmentOn("S3", "T1", "KYIV", "LUTSK", 500);
+    f.buses.add(new Bus("ONE", "Mini", 1, 100, "KYIV"));
+
+    assertThatThrownBy(() -> service.assignBus("T1", "ONE"))
+        .isInstanceOf(ValidationException.class);
+
+    f.tickets.getById("TK3").cancel();
+    f.luggage.getById("S3").cancel();
+
+    assertThat(service.assignBus("T1", "ONE").getBusId()).isEqualTo("ONE");
+  }
+
+  private void sellOn(String number, String tripId, String from, String to, int seat) {
+    f.tickets.add(new Ticket(number, tripId, new Passenger("P1", "Ivan Petrenko", null), from, to,
+        seat, new BigDecimal("100"), LocalDateTime.of(2026, 9, 1, 12, 0)));
+  }
+
+  private void shipmentOn(String id, String tripId, String from, String to, double kg) {
+    f.luggage.add(new Shipment(id, tripId, from, to, kg, 0.1, BigDecimal.TEN,
+        new Contact("Olena", null), new Contact("Taras", "+380671234567")));
   }
 
   @Test

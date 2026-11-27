@@ -20,6 +20,9 @@ public class TripService extends AbstractCrudService<Trip, String> {
   private static final Comparator<Trip> BY_DEPARTURE =
       Comparator.comparing(Trip::departure).thenComparing(Trip::getId);
 
+  // Така сама похибка ваги, як у LuggageService
+  private static final double LUGGAGE_EPS = 1e-9;
+
   private final Repository<Route, Integer> routes;
   private final Repository<Bus, String> buses;
   private final Repository<Ticket, String> tickets;
@@ -43,6 +46,7 @@ public class TripService extends AbstractCrudService<Trip, String> {
     Trip trip = get(tripId);
     requireScheduled(trip);
     checkBusFits(trip, busId);
+    checkBusHolds(trip, buses.getById(busId));
     trip.assignBus(busId);
     return store(trip);
   }
@@ -140,6 +144,52 @@ public class TripService extends AbstractCrudService<Trip, String> {
           throw new ScheduleConflictException("bus " + busId + ": trip " + trip.getId()
               + " overlaps trip " + other.getId());
         });
+  }
+
+  // Автобус має вмістити вже продані квитки й багаж на кожній ділянці рейсу
+  private void checkBusHolds(Trip trip, Bus bus) {
+    Route route = trip.getRoute();
+    int segments = route.segments().size();
+    int[] passengers = new int[segments];
+    double[] kg = new double[segments];
+    int maxSeat = 0;
+    for (Ticket t : tickets.findAll(t -> t.getTripId().equals(trip.getId()) && t.isActive())) {
+      maxSeat = Math.max(maxSeat, t.getSeatNumber());
+      int[] range = rangeOf(route, t.getFromCityId(), t.getToCityId());
+      for (int s = range[0]; s < range[1]; s++) {
+        passengers[s]++;
+      }
+    }
+    for (Luggage l : luggage.findAll(l -> l.getTripId().equals(trip.getId())
+        && l.occupiesCapacity())) {
+      int[] range = rangeOf(route, l.getFromCityId(), l.getToCityId());
+      for (int s = range[0]; s < range[1]; s++) {
+        kg[s] += l.getWeightKg();
+      }
+    }
+    for (int s = 0; s < segments; s++) {
+      if (passengers[s] > bus.getSeats()) {
+        throw new ValidationException("bus " + bus.getId() + " has " + bus.getSeats()
+            + " seats, trip " + trip.getId() + " has " + passengers[s] + " passengers on segment "
+            + s);
+      }
+      if (kg[s] > bus.getLuggageCapacityKg() + LUGGAGE_EPS) {
+        throw new ValidationException("bus " + bus.getId() + " holds "
+            + bus.getLuggageCapacityKg() + " kg of luggage, trip " + trip.getId() + " has "
+            + kg[s] + " kg on segment " + s);
+      }
+    }
+    if (maxSeat > bus.getSeats()) {
+      throw new ValidationException("bus " + bus.getId() + " has " + bus.getSeats()
+          + " seats, trip " + trip.getId() + " has a ticket for seat " + maxSeat);
+    }
+  }
+
+  // Запис з містами поза маршрутом (зіпсований JSON) займає весь рейс, як і в сервісах продажу
+  private static int[] rangeOf(Route route, String fromCityId, String toCityId) {
+    return route.servesDirection(fromCityId, toCityId)
+        ? route.stopRange(fromCityId, toCityId)
+        : new int[] {0, route.segments().size()};
   }
 
   private static void requireScheduled(Trip trip) {
