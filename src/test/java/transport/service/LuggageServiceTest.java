@@ -317,6 +317,57 @@ class LuggageServiceTest {
     assertThat(service.get("T1-S003").getStatus()).isEqualTo(LuggageStatus.IN_TRANSIT);
   }
 
+  // Зауваження рев'ю PR #21: скасування квитка має звільняти місткість, зайняту його багажем
+  @Test
+  void cancelForTicketRestoresFullCapacity() {
+    tickets.sell("T1", IVAN, "KYIV", "RIVNE");
+    service.registerPassengerLuggage("T1-001", 90, 0.3);
+    assertThat(service.availableKg("T1", "KYIV", "RIVNE")).isEqualTo(10);
+
+    tickets.cancel("T1-001");
+    assertThat(service.cancelForTicket("T1-001")).isEqualTo(1);
+
+    assertThat(service.get("T1-L001").getStatus()).isEqualTo(LuggageStatus.CANCELLED);
+    assertThat(service.availableKg("T1", "KYIV", "RIVNE")).isEqualTo(100);
+    assertThat(service.loadBySegment("T1")).containsExactly(0.0, 0.0, 0.0);
+    assertThatThrownBy(() -> service.load("T1-L001"))
+        .isInstanceOf(InvalidStatusTransitionException.class);
+  }
+
+  @Test
+  void cancelForTicketTouchesOnlyCancellableLuggageOfThatTicket() {
+    tickets.sell("T1", IVAN, "KYIV", "RIVNE");
+    tickets.sell("T1", IVAN, "KYIV", "RIVNE");
+    service.registerPassengerLuggage("T1-001", 10, 0.1);
+    service.registerPassengerLuggage("T1-001", 10, 0.1);
+    service.registerPassengerLuggage("T1-001", 10, 0.1);
+    service.registerPassengerLuggage("T1-002", 10, 0.1);
+    shipment("KYIV", "RIVNE", 10);
+    service.load("T1-L002");
+    service.load("T1-L003");
+    service.depart("T1-L003");
+
+    assertThat(service.cancelForTicket("T1-001")).isEqualTo(2);
+
+    assertThat(service.get("T1-L001").getStatus()).isEqualTo(LuggageStatus.CANCELLED);
+    assertThat(service.get("T1-L002").getStatus()).isEqualTo(LuggageStatus.CANCELLED);
+    assertThat(service.get("T1-L003").getStatus()).isEqualTo(LuggageStatus.IN_TRANSIT);
+    assertThat(service.get("T1-L004").getStatus()).isEqualTo(LuggageStatus.REGISTERED);
+    assertThat(service.get("T1-S001").getStatus()).isEqualTo(LuggageStatus.REGISTERED);
+  }
+
+  @Test
+  void cancelForTicketIsIdempotentAndIgnoresTicketsWithoutLuggage() {
+    tickets.sell("T1", IVAN, "KYIV", "RIVNE");
+    service.registerPassengerLuggage("T1-001", 10, 0.1);
+
+    assertThat(service.cancelForTicket("T1-001")).isEqualTo(1);
+    assertThat(service.cancelForTicket("T1-001")).isZero();
+    assertThat(service.cancelForTicket("T1-404")).isZero();
+    assertThatThrownBy(() -> service.cancelForTicket(null))
+        .isInstanceOf(NullPointerException.class);
+  }
+
   @Test
   void findByTripListsLuggageOfThatTripOnly() {
     f.tripService.create(f.trip("T2", LocalTime.of(16, 0)));

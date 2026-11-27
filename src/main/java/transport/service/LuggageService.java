@@ -115,6 +115,16 @@ public class LuggageService {
     return cancellable.size();
   }
 
+  /** Скасовує багаж квитка, який ще можна скасувати, і повертає його кількість. */
+  public int cancelForTicket(String ticketNumber) {
+    Objects.requireNonNull(ticketNumber, "ticketNumber");
+    List<Luggage> cancellable = luggage.findAll(l -> l instanceof PassengerLuggage p
+        && p.getTicketNumber().equals(ticketNumber)
+        && l.getStatus().canTransitionTo(LuggageStatus.CANCELLED));
+    cancellable.forEach(l -> cancel(l.getId()));
+    return cancellable.size();
+  }
+
   /** Скільки кілограмів ще влізе на всьому відрізку {@code from -> to}. */
   public double availableKg(String tripId, String fromCityId, String toCityId) {
     Leg leg = leg(tripId, fromCityId, toCityId);
